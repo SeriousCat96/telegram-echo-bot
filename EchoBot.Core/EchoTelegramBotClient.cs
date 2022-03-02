@@ -59,7 +59,7 @@ namespace EchoBot.Telegram
 				{
 					_offset = update.Id + 1;
 					var message = GetMessage(update);
-					if (message != null && uniqueUsersIds.Add(message.From.Id) && message.From != null)
+					if (message != null && uniqueUsersIds.Add(message.From.Id) && message.From != null && _echoChatsService.FrequencyCheck())
 					{
 						var userIds = _echoChatsService.GetUsers();
 						var replyMsgText = _echoChatsService.GetRandomMessage();

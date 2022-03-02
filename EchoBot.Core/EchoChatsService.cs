@@ -7,6 +7,7 @@ namespace EchoBot.Core
 	{
 		private readonly Random _rnd;
 		private readonly EchoChatOptions _options;
+		private uint _counter = 0;
 
 		public EchoChatsService(IOptions<EchoChatOptions> options)
 		{
@@ -25,6 +26,11 @@ namespace EchoBot.Core
 			int to = _options.Messages.Length - 1;
 
 			return _options.Messages[_rnd.Next(from, to)];
+		}
+
+		public bool FrequencyCheck()
+		{
+			return _counter++ % _options.ReplyFrequency == 0;
 		}
 	}
 }

@@ -4,5 +4,6 @@
 	{
 		string GetRandomMessage();
 		string[] GetUsers();
+		bool FrequencyCheck();
 	}
 }
