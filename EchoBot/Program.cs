@@ -1,3 +1,4 @@
+using EchoBot.Telegram;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -13,7 +14,13 @@ namespace EchoBot
 	{
 		public static void Main(string[] args)
 		{
-			CreateHostBuilder(args).Build().Run();
+			var host = CreateHostBuilder(args).Build();
+			var serviceProvider = host.Services;
+
+			// need to start telegam bot
+			serviceProvider.GetService(typeof(IEchoTelegramBotClient));
+
+			host.Run();
 		}
 
 		public static IHostBuilder CreateHostBuilder(string[] args) =>
