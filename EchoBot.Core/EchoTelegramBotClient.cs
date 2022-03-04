@@ -20,6 +20,7 @@ namespace EchoBot.Telegram
 		private readonly TelegramBotClient _bot;
 		private readonly Timer _timer;
 		private int? _offset;
+		private User _me;
 
 		public EchoTelegramBotClient(
 			ILogger<EchoTelegramBotClient> logger,
@@ -43,6 +44,11 @@ namespace EchoBot.Telegram
 			return _bot.SendTextMessageAsync(chatId, message, replyToMessageId: replyToMessageId);
 		}
 
+		public Task<User> GetMe()
+		{
+			return _bot.GetMeAsync();
+		}
+
 		public void Dispose()
 		{
 			_timer.Dispose();
@@ -52,6 +58,11 @@ namespace EchoBot.Telegram
 		{
 			try
 			{
+				if (_me == null)
+				{
+					_me = await GetMe();
+				}
+
 				var uniqueUsersIds = new HashSet<long>();
 				var updates = await _bot.GetUpdatesAsync(_offset);
 
@@ -59,15 +70,25 @@ namespace EchoBot.Telegram
 				{
 					_offset = update.Id + 1;
 					var message = GetMessage(update);
-					if (message != null && uniqueUsersIds.Add(message.From.Id) && message.From != null && _echoChatsService.FrequencyCheck())
+					if (message != null && uniqueUsersIds.Add(message.From.Id) && message.From != null)
 					{
-						var userIds = _echoChatsService.GetUsers();
-						var replyMsgText = _echoChatsService.GetRandomMessage();
-						string userId = message.From.Username ?? message.From.Id.ToString();
-
-						if (userIds.Any(id => id == userId))
+						// Check reply to the bot message
+						if (message.ReplyToMessage != null && message.ReplyToMessage.From?.Id == _me.Id)
 						{
+							var replyMsgText = _echoChatsService.GetRandomMessage();
 							var response = SendMessageAsync(message.Chat, replyMsgText, message.MessageId);
+						}
+						// frequency check to subscribed users (to prevent spam)
+						else if (_echoChatsService.FrequencyCheck())
+						{
+							var userIds = _echoChatsService.GetUsers();
+							string userId = message.From.Username ?? message.From.Id.ToString();
+
+							if (userIds.Any(id => id == userId))
+							{
+								var replyMsgText = _echoChatsService.GetRandomMessage();
+								var response = SendMessageAsync(message.Chat, replyMsgText, message.MessageId);
+							}
 						}
 					}
 				}

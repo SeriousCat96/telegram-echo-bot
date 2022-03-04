@@ -8,5 +8,7 @@ namespace EchoBot.Telegram
 		Task<bool> TestApiAsync();
 
 		Task<Message> SendMessageAsync(ChatId chatId, string message, int? replyToMessageId = default);
+
+		Task<User> GetMe();
 	}
 }
