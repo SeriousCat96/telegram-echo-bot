@@ -1,4 +1,4 @@
-﻿namespace EchoBot.Core
+﻿namespace EchoBot.Core.Business
 {
 	public interface IEchoChatsService
 	{

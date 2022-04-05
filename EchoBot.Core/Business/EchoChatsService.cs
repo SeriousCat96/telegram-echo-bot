@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using System;
 
-namespace EchoBot.Core
+namespace EchoBot.Core.Business
 {
 	public class EchoChatsService : IEchoChatsService
 	{

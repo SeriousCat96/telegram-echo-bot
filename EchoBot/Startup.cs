@@ -1,5 +1,9 @@
 using EchoBot.Core;
+using EchoBot.Core.Business;
+using EchoBot.Core.Business.TelegramBot;
+using EchoBot.Core.Business.TelegramBot.Commands;
 using EchoBot.Telegram;
+using EchoBot.Telegram.Commands;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +28,7 @@ namespace EchoBot
 		{
 			services.Configure<TelegramBotOptions>(Configuration.GetSection("BotOptions"));
 			services.Configure<EchoChatOptions>(Configuration.GetSection("ChatOptions"));
+			services.Configure<CommandsOptions>(Configuration.GetSection("Commands"));
 
 			services.AddMvc();
 			services.AddControllers();
@@ -34,8 +39,11 @@ namespace EchoBot
 				document.IgnoreObsoleteProperties = true;
 			});
 
+			services.AddSingleton<ITelegramBotEngine, TelegramBotEngine>();
 			services.AddSingleton<IEchoTelegramBotClient, EchoTelegramBotClient>();
 			services.AddSingleton<IEchoChatsService, EchoChatsService>();
+			services.AddSingleton<ICurrentUser, CurrentUser>();
+			services.AddSingleton<IBotCommand, StartBotCommand>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

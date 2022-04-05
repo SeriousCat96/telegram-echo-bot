@@ -26,7 +26,7 @@ namespace EchoBot.WebApp.Controllers
 		[HttpPost, Route("message")]
 		public async Task<IActionResult> SendMessageAsync([FromBody] SendMessageModel messageModel)
 		{
-			var result = await _telegramBotClient.SendMessageAsync(messageModel.ChatId, messageModel.Message, messageModel.ReplyToMessageId);
+			var result = await _telegramBotClient.SendMessageAsync(messageModel.ChatId, messageModel.Message, replyToMessageId: messageModel.ReplyToMessageId);
 			return Json(result);
 		}
 	}
