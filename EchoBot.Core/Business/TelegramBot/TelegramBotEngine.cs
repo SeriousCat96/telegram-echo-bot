@@ -1,6 +1,10 @@
-﻿using EchoBot.Telegram;
+﻿using EchoBot.Core.BackgroundJobs;
+using EchoBot.Core.BackgroundJobs.SendMessage;
+using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
+using Hangfire;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +19,8 @@ namespace EchoBot.Core.Business.TelegramBot
 		private const int TIMER_PERIOD_MILLISECONDS = 2000;
 		private readonly ILogger<TelegramBotEngine> _logger;
 		private readonly IEchoChatsService _echoChatsService;
+		private readonly IRecurringJobManager _recurringJobManager;
+		private readonly BackgroundJobOptions _backgroundJobOptions;
 		private readonly ICurrentUser _currentUser;
 		private readonly Dictionary<string, IBotCommand> _commands;
 		private readonly IEchoTelegramBotClient _botClient;
@@ -25,11 +31,15 @@ namespace EchoBot.Core.Business.TelegramBot
 			IEchoTelegramBotClient botClient,
 			IEchoChatsService chatsService,
 			ICurrentUser currentUser,
+			IRecurringJobManager recurringJobManager,
+			IOptions<BackgroundJobOptions> backgroundJobOptions,
 			IEnumerable<IBotCommand> commands,
 			ILogger<TelegramBotEngine> logger)
 		{
 			_botClient = botClient;
 			_echoChatsService = chatsService;
+			_recurringJobManager = recurringJobManager;
+			_backgroundJobOptions = backgroundJobOptions.Value;
 			_currentUser = currentUser;
 			_logger = logger;
 			_commands = new Dictionary<string, IBotCommand>();
@@ -41,6 +51,8 @@ namespace EchoBot.Core.Business.TelegramBot
 					_commands.Add(name, command);
 				}
 			}
+
+			RunBackgroundScheduledJobs();
 		}
 
 		public void Dispose()
@@ -112,6 +124,14 @@ namespace EchoBot.Core.Business.TelegramBot
 		private static Message GetMessage(Update update)
 		{
 			return update.Message;
+		}
+
+		private void RunBackgroundScheduledJobs()
+		{
+			_recurringJobManager.AddOrUpdate<SendMessageBackgroundJob>(
+				nameof(_backgroundJobOptions.SendMessage),
+				job => job.ExecuteAsync(),
+				_backgroundJobOptions.SendMessage.CronExpression);
 		}
 	}
 }

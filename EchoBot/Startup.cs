@@ -1,9 +1,13 @@
 using EchoBot.Core;
+using EchoBot.Core.BackgroundJobs;
+using EchoBot.Core.BackgroundJobs.SendMessage;
 using EchoBot.Core.Business;
 using EchoBot.Core.Business.TelegramBot;
 using EchoBot.Core.Business.TelegramBot.Commands;
 using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -26,10 +30,7 @@ namespace EchoBot
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.Configure<TelegramBotOptions>(Configuration.GetSection("BotOptions"));
-			services.Configure<EchoChatOptions>(Configuration.GetSection("ChatOptions"));
-			services.Configure<CommandsOptions>(Configuration.GetSection("Commands"));
-			services.Configure<TemplateOptions>(Configuration.GetSection("Templates"));
+			ConfigureOptions(services);
 
 			services.AddMvc();
 			services.AddControllers();
@@ -39,6 +40,14 @@ namespace EchoBot
 				document.DocumentName = "v1";
 				document.IgnoreObsoleteProperties = true;
 			});
+
+			services.AddHangfire(config =>
+				config.UseMemoryStorage()
+					.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+					.UseSimpleAssemblyNameTypeSerializer()
+					.UseRecommendedSerializerSettings()
+			);
+			services.AddHangfireServer();
 
 			services.AddSingleton<ITelegramBotEngine, TelegramBotEngine>();
 			services.AddSingleton<IEchoTelegramBotClient, EchoTelegramBotClient>();
@@ -59,6 +68,7 @@ namespace EchoBot
 			app.UseOpenApi();
 			app.UseSwaggerUi3();
 			app.UseRouting();
+			app.UseHangfireDashboard();
 
 			app.UseEndpoints(endpoints =>
 			{
@@ -67,6 +77,16 @@ namespace EchoBot
 					pattern: "api/{controller}/{id?}"
 				);
 			});
+		}
+
+		private void ConfigureOptions(IServiceCollection services)
+		{
+			services.Configure<TelegramBotOptions>(Configuration.GetSection("BotOptions"));
+			services.Configure<EchoChatOptions>(Configuration.GetSection("ChatOptions"));
+			services.Configure<CommandsOptions>(Configuration.GetSection("Commands"));
+			services.Configure<TemplateOptions>(Configuration.GetSection("Templates"));
+			services.Configure<BackgroundJobOptions>(Configuration.GetSection("BackgroundJobs"));
+			services.Configure<SendMessageOptions>(Configuration.GetSection("BackgroundJobs:SendMessage"));
 		}
 	}
 }
