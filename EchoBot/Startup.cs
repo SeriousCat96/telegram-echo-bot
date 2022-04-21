@@ -29,6 +29,7 @@ namespace EchoBot
 			services.Configure<TelegramBotOptions>(Configuration.GetSection("BotOptions"));
 			services.Configure<EchoChatOptions>(Configuration.GetSection("ChatOptions"));
 			services.Configure<CommandsOptions>(Configuration.GetSection("Commands"));
+			services.Configure<TemplateOptions>(Configuration.GetSection("Templates"));
 
 			services.AddMvc();
 			services.AddControllers();
@@ -43,6 +44,7 @@ namespace EchoBot
 			services.AddSingleton<IEchoTelegramBotClient, EchoTelegramBotClient>();
 			services.AddSingleton<IEchoChatsService, EchoChatsService>();
 			services.AddSingleton<ICurrentUser, CurrentUser>();
+			services.AddSingleton<ITemplateMessageParser, TemplateMessageParser>();
 			services.AddSingleton<IBotCommand, StartBotCommand>();
 		}
 
