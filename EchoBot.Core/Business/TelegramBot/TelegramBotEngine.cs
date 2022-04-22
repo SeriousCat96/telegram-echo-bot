@@ -128,10 +128,13 @@ namespace EchoBot.Core.Business.TelegramBot
 
 		private void RunBackgroundScheduledJobs()
 		{
-			_recurringJobManager.AddOrUpdate<SendMessageBackgroundJob>(
-				nameof(_backgroundJobOptions.SendMessage),
-				job => job.ExecuteAsync(),
-				_backgroundJobOptions.SendMessage.CronExpression);
+			if (_backgroundJobOptions.SendMessage.IsEnabled)
+			{
+				_recurringJobManager.AddOrUpdate<SendMessageBackgroundJob>(
+					nameof(_backgroundJobOptions.SendMessage),
+					job => job.ExecuteAsync(),
+					_backgroundJobOptions.SendMessage.CronExpression);
+			}
 		}
 	}
 }
