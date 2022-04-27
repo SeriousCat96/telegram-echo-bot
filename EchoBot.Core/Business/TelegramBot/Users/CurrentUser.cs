@@ -1,7 +1,7 @@
 ﻿using EchoBot.Telegram;
 using Telegram.Bot.Types;
 
-namespace EchoBot.Core.Business.TelegramBot
+namespace EchoBot.Core.Business.TelegramBot.Users
 {
 	public class CurrentUser : ICurrentUser
 	{

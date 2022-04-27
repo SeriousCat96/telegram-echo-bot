@@ -1,4 +1,4 @@
-﻿namespace EchoBot.Core.Business
+﻿namespace EchoBot.Core.Business.TemplateParser
 {
 	public class TemplateOptions
 	{

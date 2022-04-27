@@ -1,5 +1,7 @@
 ﻿using EchoBot.Core.BackgroundJobs;
 using EchoBot.Core.BackgroundJobs.SendMessage;
+using EchoBot.Core.Business.ChatsService;
+using EchoBot.Core.Business.TelegramBot.Users;
 using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
 using Hangfire;
@@ -11,8 +13,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
-namespace EchoBot.Core.Business.TelegramBot
+namespace EchoBot.Core.Business.TelegramBot.Engine
 {
 	public class TelegramBotEngine : ITelegramBotEngine
 	{
@@ -84,32 +87,40 @@ namespace EchoBot.Core.Business.TelegramBot
 
 					var message = GetMessage(update);
 
-					if (message != null 
-						&& !string.IsNullOrWhiteSpace(message.Text) 
+					if (message != null
+						&& !string.IsNullOrWhiteSpace(message.Text)
 						&& _commands.TryGetValue(message.Text, out var command))
 					{
 						await command.ExecuteCommandAsync(message);
 					}
-					else if (message != null 
-						&& uniqueUsersIds.Add(message.From.Id) 
+					else if (message != null
+						&& uniqueUsersIds.Add(message.From.Id)
 						&& message.From != null)
 					{
 						// Check reply to the bot message
 						if (message.ReplyToMessage != null && message.ReplyToMessage.From?.Id == currentUser.Id)
 						{
-							var replyMsgText = _echoChatsService.GetRandomMessage();
-							await _botClient.SendMessageAsync(message.Chat, replyMsgText, replyToMessageId: message.MessageId);
+							var replyMessage = await _echoChatsService.GetRandomMessageAsync();
+							await _botClient.SendMessageAsync(
+								message.Chat, 
+								replyMessage.Text, 
+								replyToMessageId: message.MessageId,
+								parseMode: ParseMode.Markdown);
 						}
 						// frequency check to subscribed users (to prevent spam)
 						else if (_echoChatsService.FrequencyCheck())
 						{
-							var userIds = _echoChatsService.GetUsers();
-							string userId = message.From.Username ?? message.From.Id.ToString();
+							var excludedUsers = _echoChatsService.GetExcludedUsers();
+							string username = message.From.Username ?? message.From.Id.ToString();
 
-							if (userIds.Any(id => id == userId))
+							if (!excludedUsers.Any(name => name == username))
 							{
-								var replyMsgText = _echoChatsService.GetRandomMessage();
-								await _botClient.SendMessageAsync(message.Chat, replyMsgText, replyToMessageId: message.MessageId);
+								var replyMessage = await _echoChatsService.GetRandomMessageAsync();
+								await _botClient.SendMessageAsync(
+									message.Chat,
+									replyMessage.Text,
+									replyToMessageId: message.MessageId,
+									parseMode: ParseMode.Markdown);
 							}
 						}
 					}

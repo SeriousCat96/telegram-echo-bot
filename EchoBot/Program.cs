@@ -1,4 +1,4 @@
-using EchoBot.Core.Business.TelegramBot;
+using EchoBot.Core.Business.TelegramBot.Engine;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

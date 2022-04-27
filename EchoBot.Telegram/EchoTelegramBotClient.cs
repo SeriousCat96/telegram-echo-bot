@@ -50,6 +50,17 @@ namespace EchoBot.Telegram
 				cancellationToken);
 		}
 
+		public Task<ChatMember> GetChatMemberAsync(
+			ChatId chatId,
+			long userId,
+			CancellationToken cancellationToken = default)
+		{
+			return _bot.GetChatMemberAsync(
+				chatId,
+				userId,
+				cancellationToken);
+		}
+
 		public Task<User> GetMeAsync(CancellationToken cancellationToken = default)
 		{
 			return _bot.GetMeAsync(cancellationToken);

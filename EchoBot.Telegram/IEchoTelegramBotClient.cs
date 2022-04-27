@@ -30,6 +30,11 @@ namespace EchoBot.Telegram
 			IReplyMarkup? replyMarkup = default,
 			CancellationToken cancellationToken = default);
 
+		Task<ChatMember> GetChatMemberAsync(
+			ChatId chatId,
+			long userId,
+			CancellationToken cancellationToken = default);
+
 		Task<bool> TestApiAsync(CancellationToken cancellationToken = default);
 	}
 }

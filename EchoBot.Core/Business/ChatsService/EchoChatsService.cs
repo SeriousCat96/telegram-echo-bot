@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿using EchoBot.Core.Business.TelegramBot.Models;
+using EchoBot.Core.Business.TemplateParser;
+using Microsoft.Extensions.Options;
 using System;
+using System.Threading.Tasks;
 
-namespace EchoBot.Core.Business
+namespace EchoBot.Core.Business.ChatsService
 {
 	public class EchoChatsService : IEchoChatsService
 	{
@@ -19,18 +22,23 @@ namespace EchoBot.Core.Business
 			_rnd = new Random();
 		}
 
+		public string[] GetExcludedUsers()
+		{
+			return _options.ExcludedUsers;
+		}
+
 		public string[] GetUsers()
 		{
 			return _options.Users;
 		}
 
-		public string GetRandomMessage()
+		public async Task<TelegramMessage> GetRandomMessageAsync()
 		{
 			int from = 0;
 			int to = _options.Messages.Length - 1;
 
 			var text = _options.Messages[_rnd.Next(from, to)];
-			return _templateParser.ParseTemplate(text);
+			return await _templateParser.ParseTemplateAsync(text);
 		}
 
 		public bool FrequencyCheck()

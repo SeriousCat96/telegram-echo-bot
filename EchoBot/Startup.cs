@@ -1,9 +1,11 @@
 using EchoBot.Core;
 using EchoBot.Core.BackgroundJobs;
 using EchoBot.Core.BackgroundJobs.SendMessage;
-using EchoBot.Core.Business;
-using EchoBot.Core.Business.TelegramBot;
+using EchoBot.Core.Business.ChatsService;
 using EchoBot.Core.Business.TelegramBot.Commands;
+using EchoBot.Core.Business.TelegramBot.Engine;
+using EchoBot.Core.Business.TelegramBot.Users;
+using EchoBot.Core.Business.TemplateParser;
 using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
 using Hangfire;

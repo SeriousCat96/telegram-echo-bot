@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace EchoBot.Core.Business.TelegramBot.Commands
 {
@@ -26,7 +27,7 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 		{
 			var text = string.Join(Environment.NewLine, _commandOptions.Info);
 
-			return _botClient.SendMessageAsync(message.Chat, text);
+			return _botClient.SendMessageAsync(message.Chat, text, parseMode: ParseMode.Markdown);
 		}
 	}
 }
