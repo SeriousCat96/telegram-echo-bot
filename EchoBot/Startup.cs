@@ -8,6 +8,7 @@ using EchoBot.Core.Business.TelegramBot.Users;
 using EchoBot.Core.Business.TemplateParser;
 using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
+using EchoBot.WebApp.HostedServices;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Builder;
@@ -51,6 +52,7 @@ namespace EchoBot
 			);
 			services.AddHangfireServer();
 
+			services.AddHostedService<TelegramBotHostedService>();
 			services.AddSingleton<ITelegramBotEngine, TelegramBotEngine>();
 			services.AddSingleton<IEchoTelegramBotClient, EchoTelegramBotClient>();
 			services.AddSingleton<IEchoChatsService, EchoChatsService>();
