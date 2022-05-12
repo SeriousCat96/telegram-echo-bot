@@ -63,9 +63,11 @@ namespace EchoBot.Core.Business.TelegramBot.Action
 					replyMessage.Text,
 					replyToMessageId: message.MessageId,
 					parseMode: ParseMode.Markdown);
+
+				return ActionResult.Succeed;
 			}
 
-			return ActionResult.Succeed;
+			return ActionResult.NotExecuted;
 		}
 	}
 }
