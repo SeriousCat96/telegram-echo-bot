@@ -1,31 +1,40 @@
-﻿using EchoBot.Telegram;
+﻿using EchoBot.Core.Business.Commands;
+using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
-using Microsoft.Extensions.Options;
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace EchoBot.Core.Business.TelegramBot.Commands
 {
-	[BotCommand("/start")]
-	[BotCommand("/help")]
+	[BotCommand("/start", "standard bot command")]
+	[BotCommand("/help", "shows list of commands")]
 	public class StartBotCommand : IBotCommand
 	{
 		private readonly IEchoTelegramBotClient _botClient;
-		private readonly CommandsOptions _commandOptions;
 
-		public StartBotCommand(
-			IEchoTelegramBotClient botClient,
-			IOptions<CommandsOptions> commandOptions)
+		public StartBotCommand(IEchoTelegramBotClient botClient)
 		{
 			_botClient = botClient;
-			_commandOptions = commandOptions.Value;
 		}
 
 		public Task ExecuteCommandAsync(Message message)
 		{
-			var text = string.Join(Environment.NewLine, _commandOptions.Info);
+			var cmds = Assembly
+				.GetExecutingAssembly()
+				.GetTypes()
+				.Where(type => typeof(IBotCommand).IsAssignableFrom(type))
+				.SelectMany(type => type.GetCustomAttributes<BotCommandAttribute>())
+				.Select(attr => new CommandInfo
+				{
+					Command = attr.CommandName,
+					Description = attr.Description
+				});
+
+			var text = string.Join(Environment.NewLine, cmds);
 
 			return _botClient.SendMessageAsync(message.Chat, text, parseMode: ParseMode.Markdown);
 		}

@@ -1,7 +1,7 @@
-using EchoBot.Core;
 using EchoBot.Core.BackgroundJobs;
 using EchoBot.Core.BackgroundJobs.SendMessage;
 using EchoBot.Core.Business.ChatsService;
+using EchoBot.Core.Business.Commands;
 using EchoBot.Core.Business.TelegramBot.Commands;
 using EchoBot.Core.Business.TelegramBot.Engine;
 using EchoBot.Core.Business.TelegramBot.Users;
@@ -58,7 +58,9 @@ namespace EchoBot
 			services.AddSingleton<IEchoChatsService, EchoChatsService>();
 			services.AddSingleton<ICurrentUser, CurrentUser>();
 			services.AddSingleton<ITemplateMessageParser, TemplateMessageParser>();
-			services.AddSingleton<IBotCommand, StartBotCommand>();
+			services.AddSingleton<IBotCommandRepository, BotCommandRepository>();
+			
+			services.RegisterBotCommands();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,7 +89,6 @@ namespace EchoBot
 		{
 			services.Configure<TelegramBotOptions>(Configuration.GetSection("BotOptions"));
 			services.Configure<EchoChatOptions>(Configuration.GetSection("ChatOptions"));
-			services.Configure<CommandsOptions>(Configuration.GetSection("Commands"));
 			services.Configure<TemplateOptions>(Configuration.GetSection("Templates"));
 			services.Configure<BackgroundJobOptions>(Configuration.GetSection("BackgroundJobs"));
 			services.Configure<SendMessageOptions>(Configuration.GetSection("BackgroundJobs:SendMessage"));

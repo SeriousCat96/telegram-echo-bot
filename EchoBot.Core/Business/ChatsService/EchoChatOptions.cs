@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EchoBot.Core
+namespace EchoBot.Core.Business.ChatsService
 {
 	public class EchoChatOptions
 	{

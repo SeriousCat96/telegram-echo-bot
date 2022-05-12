@@ -22,11 +22,11 @@ namespace EchoBot.Core.Business.TelegramBot.Engine
 	{
 		private const int TIMER_PERIOD_MILLISECONDS = 2000;
 		private readonly ILogger<TelegramBotEngine> _logger;
+		private readonly IBotCommandRepository _commandRepository;
 		private readonly IEchoChatsService _echoChatsService;
 		private readonly IRecurringJobManager _recurringJobManager;
 		private readonly BackgroundJobOptions _backgroundJobOptions;
 		private readonly ICurrentUser _currentUser;
-		private readonly Dictionary<string, IBotCommand> _commands;
 		private readonly IEchoTelegramBotClient _botClient;
 		private Timer _timer;
 		private int? _offset;
@@ -37,7 +37,7 @@ namespace EchoBot.Core.Business.TelegramBot.Engine
 			ICurrentUser currentUser,
 			IRecurringJobManager recurringJobManager,
 			IOptions<BackgroundJobOptions> backgroundJobOptions,
-			IEnumerable<IBotCommand> commands,
+			IBotCommandRepository commandRepository,
 			ILogger<TelegramBotEngine> logger)
 		{
 			_botClient = botClient;
@@ -46,15 +46,7 @@ namespace EchoBot.Core.Business.TelegramBot.Engine
 			_backgroundJobOptions = backgroundJobOptions.Value;
 			_currentUser = currentUser;
 			_logger = logger;
-			_commands = new Dictionary<string, IBotCommand>();
-			foreach (var command in commands)
-			{
-				var names = command.GetType().GetCustomAttributes<BotCommandAttribute>().Select(attr => attr.CommandName);
-				foreach (var name in names)
-				{
-					_commands.Add(name, command);
-				}
-			}
+			_commandRepository = commandRepository;
 
 			RunBackgroundScheduledJobs();
 		}
@@ -111,7 +103,6 @@ namespace EchoBot.Core.Business.TelegramBot.Engine
 		private async Task ProcessUpdateAsync(Update update)
 		{
 			var currentUser = _currentUser.User;
-
 			if (currentUser == null)
 			{
 				return;
@@ -122,25 +113,24 @@ namespace EchoBot.Core.Business.TelegramBot.Engine
 
 			_offset = update.Id + 1;
 
-			if (message != null
-				&& !string.IsNullOrWhiteSpace(message.Text)
-				&& _commands.TryGetValue(message.Text, out var command))
+			if (message == null)
+			{
+				return;
+			}
+
+			var command = _commandRepository.GetCommandByName(message.Text);
+			if (command != null)
 			{
 				await command.ExecuteCommandAsync(message);
+				return;
 			}
-			else if (message != null
-				&& uniqueUsersIds.Add(message.From.Id)
-				&& message.From != null)
+
+			if (uniqueUsersIds.Add(message.From.Id) && message.From != null)
 			{
 				// Check reply to the bot message
 				if (message.ReplyToMessage != null && message.ReplyToMessage.From?.Id == currentUser.Id)
 				{
-					var replyMessage = await _echoChatsService.GetRandomMessageAsync();
-					await _botClient.SendMessageAsync(
-						message.Chat,
-						replyMessage.Text,
-						replyToMessageId: message.MessageId,
-						parseMode: ParseMode.Markdown);
+					await SendReplyToMessageAsync(message);
 				}
 				// frequency check to subscribed users (to prevent spam)
 				else if (_echoChatsService.FrequencyCheck())
@@ -150,15 +140,20 @@ namespace EchoBot.Core.Business.TelegramBot.Engine
 
 					if (!excludedUsers.Any(name => name == username))
 					{
-						var replyMessage = await _echoChatsService.GetRandomMessageAsync();
-						await _botClient.SendMessageAsync(
-							message.Chat,
-							replyMessage.Text,
-							replyToMessageId: message.MessageId,
-							parseMode: ParseMode.Markdown);
+						await SendReplyToMessageAsync(message);
 					}
 				}
 			}
+		}
+
+		private async Task SendReplyToMessageAsync(Message receivedMessage)
+		{
+			var replyMessage = await _echoChatsService.GetRandomMessageAsync();
+			await _botClient.SendMessageAsync(
+				receivedMessage.Chat,
+				replyMessage.Text,
+				replyToMessageId: receivedMessage.MessageId,
+				parseMode: ParseMode.Markdown);
 		}
 	}
 }

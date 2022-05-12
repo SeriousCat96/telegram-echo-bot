@@ -1,4 +1,5 @@
-﻿using EchoBot.Core.Business.TelegramBot.Models;
+﻿using EchoBot.Core.Business.ChatsService;
+using EchoBot.Core.Business.TelegramBot.Models;
 using EchoBot.Telegram;
 using Microsoft.Extensions.Options;
 using System;
