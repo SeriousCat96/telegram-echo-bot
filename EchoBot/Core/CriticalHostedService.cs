@@ -14,8 +14,6 @@ namespace EchoBot.WebApp.Core
 		protected readonly ILogger<CriticalHostedService> Logger;
 		protected readonly IServiceProvider ServiceProvider;
 
-		protected abstract Task StartServiceAsync(CancellationToken cancellationToken);
-
 		protected CriticalHostedService(
 			ILogger<CriticalHostedService> logger, 
 			IServiceScopeFactory serviceScopeFactory)
@@ -26,28 +24,35 @@ namespace EchoBot.WebApp.Core
 			ServiceProvider = _serviceScope.ServiceProvider;
 		}
 
+		protected abstract Task StartServiceAsync(CancellationToken cancellationToken);
+
+		protected virtual Task StopServiceAsync(CancellationToken cancellationToken)
+		{
+			return Task.CompletedTask;
+		}
+
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			try
 			{
 				await StartServiceAsync(cancellationToken);
 			}
-			catch (Exception exception)
+			catch (Exception exc)
 			{
-				ExitCritical(exception);
+				ExitCritical(exc);
 			}
 		}
 
-		public virtual Task StopAsync(CancellationToken cancellationToken)
+		public Task StopAsync(CancellationToken cancellationToken)
 		{
 			_serviceScope.Dispose();
-			return Task.CompletedTask;
+			return StopServiceAsync(cancellationToken);
 		}
 
-		private void ExitCritical(Exception exception)
+		private void ExitCritical(Exception exc)
 		{
-			Console.WriteLine($"Critical application hosted service error in {GetType().Name}. Exception=[{exception}]");
-			Logger.LogCritical(exception, $"Critical application hosted service error in {GetType().Name}");
+			Console.WriteLine($"Critical application hosted service error in {GetType().Name}. Exception=[{exc}]");
+			Logger.LogCritical(exc, $"Critical application hosted service error in {GetType().Name}");
 			Environment.ExitCode = -1;
 			ServiceProvider.GetRequiredService<IHostApplicationLifetime>().StopApplication();
 		}

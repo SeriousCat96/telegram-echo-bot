@@ -14,4 +14,8 @@
     <ProjectReference Include="..\EchoBot.Telegram\EchoBot.Telegram.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Business\TelegramBot\Engine\" />
+  </ItemGroup>
+
 </Project>

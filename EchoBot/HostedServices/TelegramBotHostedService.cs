@@ -1,4 +1,4 @@
-﻿using EchoBot.Core.Business.TelegramBot.Engine;
+﻿using EchoBot.Telegram.Engine;
 using EchoBot.WebApp.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,6 +23,13 @@ namespace EchoBot.WebApp.HostedServices
 		protected override async Task StartServiceAsync(CancellationToken cancellationToken)
 		{
 			await _telegramBotEngine.StartAsync();
+		}
+
+		protected override Task StopServiceAsync(CancellationToken cancellationToken)
+		{
+			_telegramBotEngine.Dispose();
+
+			return Task.CompletedTask;
 		}
 	}
 }

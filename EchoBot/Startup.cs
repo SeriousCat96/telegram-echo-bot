@@ -1,13 +1,16 @@
 using EchoBot.Core.BackgroundJobs;
 using EchoBot.Core.BackgroundJobs.SendMessage;
 using EchoBot.Core.Business.ChatsService;
-using EchoBot.Core.Business.Commands;
+using EchoBot.Core.Business.TelegramBot.Action;
 using EchoBot.Core.Business.TelegramBot.Commands;
-using EchoBot.Core.Business.TelegramBot.Engine;
-using EchoBot.Core.Business.TelegramBot.Users;
 using EchoBot.Core.Business.TemplateParser;
 using EchoBot.Telegram;
+using EchoBot.Telegram.Actions;
 using EchoBot.Telegram.Commands;
+using EchoBot.Telegram.Engine;
+using EchoBot.Telegram.Extensions;
+using EchoBot.Telegram.Users;
+using EchoBot.WebApp.Extensions;
 using EchoBot.WebApp.HostedServices;
 using Hangfire;
 using Hangfire.MemoryStorage;
@@ -33,8 +36,6 @@ namespace EchoBot
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services)
 		{
-			ConfigureOptions(services);
-
 			services.AddMvc();
 			services.AddControllers();
 			services.AddSwaggerDocument(document =>
@@ -44,23 +45,22 @@ namespace EchoBot
 				document.IgnoreObsoleteProperties = true;
 			});
 
+			services.AddHangfireServer();
 			services.AddHangfire(config =>
 				config.UseMemoryStorage()
 					.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
 					.UseSimpleAssemblyNameTypeSerializer()
 					.UseRecommendedSerializerSettings()
 			);
-			services.AddHangfireServer();
+
+			services.AddTelegramBotEngineServices();
+			services.AddTelegramBotServices();
+			services.AddTelegramBotCommands();
+			services.AddTelegramBotActions();
+			services.AddTelegramBotOptions(Configuration);
 
 			services.AddHostedService<TelegramBotHostedService>();
-			services.AddSingleton<ITelegramBotEngine, TelegramBotEngine>();
-			services.AddSingleton<IEchoTelegramBotClient, EchoTelegramBotClient>();
-			services.AddSingleton<IEchoChatsService, EchoChatsService>();
-			services.AddSingleton<ICurrentUser, CurrentUser>();
-			services.AddSingleton<ITemplateMessageParser, TemplateMessageParser>();
-			services.AddSingleton<IBotCommandRepository, BotCommandRepository>();
-			
-			services.RegisterBotCommands();
+			services.AddHostedService<HangfireHostedService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,15 +83,6 @@ namespace EchoBot
 					pattern: "api/{controller}/{id?}"
 				);
 			});
-		}
-
-		private void ConfigureOptions(IServiceCollection services)
-		{
-			services.Configure<TelegramBotOptions>(Configuration.GetSection("BotOptions"));
-			services.Configure<EchoChatOptions>(Configuration.GetSection("ChatOptions"));
-			services.Configure<TemplateOptions>(Configuration.GetSection("Templates"));
-			services.Configure<BackgroundJobOptions>(Configuration.GetSection("BackgroundJobs"));
-			services.Configure<SendMessageOptions>(Configuration.GetSection("BackgroundJobs:SendMessage"));
 		}
 	}
 }

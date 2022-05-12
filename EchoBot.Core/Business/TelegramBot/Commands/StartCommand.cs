@@ -12,11 +12,11 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 {
 	[BotCommand("/start", "standard bot command")]
 	[BotCommand("/help", "shows list of commands")]
-	public class StartBotCommand : IBotCommand
+	public class StartCommand : IBotCommand
 	{
 		private readonly IEchoTelegramBotClient _botClient;
 
-		public StartBotCommand(IEchoTelegramBotClient botClient)
+		public StartCommand(IEchoTelegramBotClient botClient)
 		{
 			_botClient = botClient;
 		}

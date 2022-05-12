@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EchoBot.Core.Business.TelegramBot.Engine
+namespace EchoBot.Telegram.Engine
 {
 	public interface ITelegramBotEngine : IDisposable
 	{

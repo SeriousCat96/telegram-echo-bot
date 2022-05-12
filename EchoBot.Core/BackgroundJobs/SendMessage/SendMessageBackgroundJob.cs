@@ -1,6 +1,7 @@
 ﻿using EchoBot.Core.Business.ChatsService;
 using EchoBot.Telegram;
 using Microsoft.Extensions.Options;
+using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -23,7 +24,7 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 			_chatsService = chatsService;
 		}
 
-		public async Task ExecuteAsync()
+		public async Task ExecuteAsync(CancellationToken cancellationToken = default)
 		{
 			var message = await _chatsService.GetRandomMessageAsync();
 
@@ -40,7 +41,8 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 			await _botClient.SendMessageAsync(
 				chat,
 				message.Text,
-				parseMode: ParseMode.Markdown);
+				parseMode: ParseMode.Markdown,
+				cancellationToken: cancellationToken);
 		}
 	}
 }

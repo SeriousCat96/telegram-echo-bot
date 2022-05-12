@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -38,13 +41,13 @@ namespace EchoBot.Telegram
 			CancellationToken cancellationToken = default)
 		{
 			return _bot.SendTextMessageAsync(
-				chatId, 
-				text, 
-				parseMode, 
-				entities, 
-				disableWebPagePreview, 
-				disableNotification, 
-				replyToMessageId, 
+				chatId,
+				text,
+				parseMode,
+				entities,
+				disableWebPagePreview,
+				disableNotification,
+				replyToMessageId,
 				allowSendingWithoutReply,
 				replyMarkup,
 				cancellationToken);
@@ -73,7 +76,15 @@ namespace EchoBot.Telegram
 			IEnumerable<UpdateType> allowedUpdates = default,
 			CancellationToken cancellationToken = default)
 		{
-			return _bot.GetUpdatesAsync(offset, limit, timeout, allowedUpdates, cancellationToken);
+			// HACK: to ignore http 409 error
+			try
+			{
+				return _bot.GetUpdatesAsync(offset, limit, timeout, allowedUpdates, cancellationToken);
+			}
+			catch (ApiRequestException exc) when (exc.HttpStatusCode == HttpStatusCode.Conflict)
+			{
+				return Task.FromResult(Array.Empty<Update>());
+			}
 		}
 	}
 }

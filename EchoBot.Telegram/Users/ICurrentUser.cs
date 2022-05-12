@@ -1,6 +1,6 @@
 ﻿using Telegram.Bot.Types;
 
-namespace EchoBot.Core.Business.TelegramBot.Users
+namespace EchoBot.Telegram.Users
 {
 	public interface ICurrentUser
 	{

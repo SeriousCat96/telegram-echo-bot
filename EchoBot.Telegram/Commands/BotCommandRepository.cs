@@ -1,9 +1,8 @@
-﻿using EchoBot.Telegram.Commands;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace EchoBot.Core.Business.Commands
+namespace EchoBot.Telegram.Commands
 {
 	public class BotCommandRepository : IBotCommandRepository
 	{
