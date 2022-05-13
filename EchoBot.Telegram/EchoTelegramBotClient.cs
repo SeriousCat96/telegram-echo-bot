@@ -69,22 +69,14 @@ namespace EchoBot.Telegram
 			return _bot.GetMeAsync(cancellationToken);
 		}
 
-		public async Task<Update[]> GetUpdatesAsync(
+		public Task<Update[]> GetUpdatesAsync(
 			int? offset = default,
 			int? limit = default,
 			int? timeout = default,
 			IEnumerable<UpdateType> allowedUpdates = default,
 			CancellationToken cancellationToken = default)
 		{
-			// HACK: to ignore http 409 error
-			try
-			{
-				return await _bot.GetUpdatesAsync(offset, limit, timeout, allowedUpdates, cancellationToken);
-			}
-			catch (ApiRequestException exc) when (exc.ErrorCode == (int)HttpStatusCode.Conflict)
-			{
-				return Array.Empty<Update>();
-			}
+			return _bot.GetUpdatesAsync(offset, limit, timeout, allowedUpdates, cancellationToken);
 		}
 	}
 }

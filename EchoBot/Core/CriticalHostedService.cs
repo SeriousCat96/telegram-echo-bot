@@ -39,7 +39,7 @@ namespace EchoBot.WebApp.Core
 			}
 			catch (Exception exc)
 			{
-				ExitCritical(exc);
+				StopApplication(exc);
 			}
 		}
 
@@ -49,9 +49,8 @@ namespace EchoBot.WebApp.Core
 			return StopServiceAsync(cancellationToken);
 		}
 
-		private void ExitCritical(Exception exc)
+		private void StopApplication(Exception exc)
 		{
-			Console.WriteLine($"Critical application hosted service error in {GetType().Name}. Exception=[{exc}]");
 			Logger.LogCritical(exc, $"Critical application hosted service error in {GetType().Name}");
 			Environment.ExitCode = -1;
 			ServiceProvider.GetRequiredService<IHostApplicationLifetime>().StopApplication();
