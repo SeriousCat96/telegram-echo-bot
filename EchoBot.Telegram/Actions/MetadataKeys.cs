@@ -2,6 +2,6 @@
 {
 	public static class MetadataKeys
 	{
-		public const string UniqueUsers = "UniqueUsers";
+		public const string RepliedUsers = "RepliedUsers";
 	}
 }

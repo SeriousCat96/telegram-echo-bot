@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
-namespace EchoBot.Core.Business.TelegramBot.Action
+namespace EchoBot.Core.Business.TelegramBot.Actions
 {
 	public class ProcessCommandsAction : ActionBase
 	{

@@ -23,6 +23,11 @@ namespace EchoBot.Telegram.Commands
 
 		public IBotCommand GetCommandByName(string name)
 		{
+			if (string.IsNullOrWhiteSpace(name))
+			{
+				return null;
+			}
+
 			_commands.TryGetValue(name, out var command);
 			return command;
 		}

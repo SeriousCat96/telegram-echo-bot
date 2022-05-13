@@ -1,15 +1,5 @@
-using EchoBot.Core.BackgroundJobs;
-using EchoBot.Core.BackgroundJobs.SendMessage;
-using EchoBot.Core.Business.ChatsService;
-using EchoBot.Core.Business.TelegramBot.Action;
 using EchoBot.Core.Business.TelegramBot.Commands;
-using EchoBot.Core.Business.TemplateParser;
-using EchoBot.Telegram;
-using EchoBot.Telegram.Actions;
-using EchoBot.Telegram.Commands;
-using EchoBot.Telegram.Engine;
 using EchoBot.Telegram.Extensions;
-using EchoBot.Telegram.Users;
 using EchoBot.WebApp.Extensions;
 using EchoBot.WebApp.HostedServices;
 using Hangfire;

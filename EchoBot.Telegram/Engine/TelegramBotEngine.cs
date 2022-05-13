@@ -15,6 +15,7 @@ namespace EchoBot.Telegram.Engine
 		private readonly ILogger<TelegramBotEngine> _logger;
 		private readonly IEchoTelegramBotClient _botClient;
 		private readonly IActionsExecutor _actionsExecutor;
+		private readonly SemaphoreSlim _semaphore;
 		private Timer _timer;
 		private int? _offset;
 
@@ -26,11 +27,13 @@ namespace EchoBot.Telegram.Engine
 			_botClient = botClient;
 			_actionsExecutor = actionsExecutor;
 			_logger = logger;
+			_semaphore = new SemaphoreSlim(1, 1);
 		}
 
 		public void Dispose()
 		{
 			_timer.Dispose();
+			_semaphore.Dispose();
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken = default)
@@ -48,6 +51,8 @@ namespace EchoBot.Telegram.Engine
 		{
 			try
 			{
+				await _semaphore.WaitAsync();
+
 				var updates = await _botClient.GetUpdatesAsync(_offset);
 				if (updates.Length == 0)
 				{
@@ -56,7 +61,7 @@ namespace EchoBot.Telegram.Engine
 
 				var metadata = new Dictionary<string, object>
 				{
-					[MetadataKeys.UniqueUsers] = new HashSet<long>()
+					[MetadataKeys.RepliedUsers] = new HashSet<long>()
 				};
 
 				foreach (var update in updates)
@@ -68,6 +73,10 @@ namespace EchoBot.Telegram.Engine
 			catch (Exception exc)
 			{
 				_logger.LogError(exc, exc.Message);
+			}
+			finally
+			{
+				_semaphore.Release();
 			}
 		}
 	}

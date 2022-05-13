@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace EchoBot.Core.Business.TelegramBot.Action
+namespace EchoBot.Core.Business.TelegramBot.Actions
 {
 	public class ProcessReplyMessageAction : ActionBase
 	{
@@ -35,38 +35,40 @@ namespace EchoBot.Core.Business.TelegramBot.Action
 		{
 			var message = update.Message;
 
-			if (message == null)
+			if (message != null)
 			{
-				return ActionResult.NotExecuted;
-			}
-
-			if (!metadata.TryGetValue(MetadataKeys.UniqueUsers, out var userIds))
-			{
-				_logger.LogWarning("metadata key uniqueUsersIds not found");
-				userIds = new HashSet<long>();
-			}
-
-			var uniqueUsersIds = (HashSet<long>)userIds;
-
-			if (uniqueUsersIds.Add(message.From.Id) &&
-				message.From != null &&
-				_chatsService.FrequencyCheck())
-			{
-				var excludedUsers = _chatsService.GetExcludedUsers();
-				string username = message.From.Username ?? message.From.Id.ToString();
-
-				if (!excludedUsers.Any(name => name == username))
+				if (!metadata.TryGetValue(MetadataKeys.RepliedUsers, out var userIds))
 				{
-					var replyMessage = await _chatsService.GetRandomMessageAsync();
-					await _botClient.SendMessageAsync(
-						message.Chat,
-						replyMessage.Text,
-						replyToMessageId: message.MessageId,
-						parseMode: ParseMode.Markdown);
+					_logger.LogWarning($"metadata key {MetadataKeys.RepliedUsers} not found");
+					userIds = new HashSet<long>();
+				}
+
+				var repliedUsersIds = (HashSet<long>)userIds;
+
+				if (!repliedUsersIds.Contains(message.From.Id) &&
+					message.From != null &&
+					_chatsService.FrequencyCheck())
+				{
+					var excludedUsers = _chatsService.GetExcludedUsers();
+					string username = message.From.Username ?? message.From.Id.ToString();
+
+					if (!excludedUsers.Any(name => name == username))
+					{
+						var replyMessage = await _chatsService.GetRandomMessageAsync();
+						await _botClient.SendMessageAsync(
+							message.Chat,
+							replyMessage.Text,
+							replyToMessageId: message.MessageId,
+							parseMode: ParseMode.Markdown);
+
+						repliedUsersIds.Add(message.From.Id);
+
+						return ActionResult.Succeed;
+					}
 				}
 			}
 
-			return ActionResult.Succeed;
+			return ActionResult.NotExecuted;
 		}
 	}
 }
