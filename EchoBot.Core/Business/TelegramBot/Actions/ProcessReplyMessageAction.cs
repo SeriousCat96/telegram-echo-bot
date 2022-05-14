@@ -47,7 +47,7 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 
 				if (!repliedUsersIds.Contains(message.From.Id) &&
 					message.From != null &&
-					_chatsService.FrequencyCheck())
+					(message.Chat.Type == ChatType.Private || _chatsService.FrequencyCheck()))
 				{
 					var excludedUsers = _chatsService.GetExcludedUsers();
 					string username = message.From.Username ?? message.From.Id.ToString();
