@@ -36,27 +36,19 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 			{
 				var phrase = $"{i + 1}. {messages[i]}";
 				
+				if (totalLength + phrase.Length + newLineLength > maxMessageLength)
+				{
+					await _botClient.SendMessageAsync(
+						message.Chat,
+						string.Join(Environment.NewLine, phrases),
+						parseMode: ParseMode.Markdown);
+
+					phrases.Clear();
+					totalLength = 0;
+				}
+
 				phrases.Add(phrase);
 				totalLength += phrase.Length + newLineLength;
-
-				if (i < messages.Length - 1)
-				{
-					var nextPhrase = $"{i + 2}. {messages[i + 1]}";
-					if (totalLength + nextPhrase.Length + newLineLength > maxMessageLength)
-					{
-						await _botClient.SendMessageAsync(
-							message.Chat,
-							string.Join(Environment.NewLine, phrases),
-							parseMode: ParseMode.Markdown);
-
-						phrases.Clear();
-						totalLength = 0;
-					}
-					
-					phrases.Add(nextPhrase);
-					totalLength += nextPhrase.Length + newLineLength;
-					++i;
-				}
 			}
 
 			if (phrases.Count > 0)
