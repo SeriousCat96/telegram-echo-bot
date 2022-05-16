@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EchoBot.Telegram.Actions.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
@@ -8,10 +12,14 @@ namespace EchoBot.Telegram.Actions
 {
 	public abstract class ActionBase : IAction
 	{
+		private readonly IServiceProvider _serviceProvider;
 		private readonly ILogger<ActionBase> _logger;
 
-		protected ActionBase(ILogger<ActionBase> logger)
+		protected ActionBase(
+			IServiceProvider serviceProvider,
+			ILogger<ActionBase> logger)
 		{
+			_serviceProvider = serviceProvider;
 			_logger = logger;
 		}
 
@@ -23,6 +31,20 @@ namespace EchoBot.Telegram.Actions
 		{
 			try
 			{
+				var actionFilters = GetType()
+					.GetCustomAttributes<ActionFilterAttribute>()
+					.Select(f => f.FilterType)
+					.Select(type => (IActionFilter)_serviceProvider.GetRequiredService(type))
+					.OrderBy(filter => filter.Order);
+
+				foreach (var actionFilter in actionFilters)
+				{
+					if (!actionFilter.IsAllowed(update, metadata))
+					{
+						return ActionResult.NotExecuted;
+					}
+				}
+
 				return await ExecuteCoreAsync(update, metadata);
 			}
 			catch (Exception exc)

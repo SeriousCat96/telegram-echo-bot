@@ -1,15 +1,21 @@
 ﻿using EchoBot.Core.Business.ChatsService;
+using EchoBot.Core.Business.TelegramBot.Actions.Filters;
 using EchoBot.Telegram;
 using EchoBot.Telegram.Actions;
+using EchoBot.Telegram.Actions.Filters;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace EchoBot.Core.Business.TelegramBot.Actions
 {
+	[ActionFilter(typeof(MessageHasSenderActionFilter))]
+	[ActionFilter(typeof(UserExcludedFromReplyActionFilter))]
+	[ActionFilter(typeof(UserIsNotRepliedActionFilter))]
+	[ActionFilter(typeof(MessageReplyFrequencyActionFilter))]
 	public class ProcessReplyMessageAction : ActionBase
 	{
 		private readonly ILogger<ProcessReplyMessageAction> _logger;
@@ -19,8 +25,9 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 		public ProcessReplyMessageAction(
 			IEchoTelegramBotClient botClient,
 			IEchoChatsService chatsService,
+			IServiceProvider serviceProvider,
 			ILogger<ProcessReplyMessageAction> logger)
-			: base(logger)
+			: base(serviceProvider, logger)
 		{
 			_botClient = botClient;
 			_chatsService = chatsService;
@@ -35,40 +42,24 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 		{
 			var message = update.Message;
 
-			if (message != null)
+			if (!metadata.TryGetValue(MetadataKeys.RepliedUsers, out var userIds))
 			{
-				if (!metadata.TryGetValue(MetadataKeys.RepliedUsers, out var userIds))
-				{
-					_logger.LogWarning($"metadata key {MetadataKeys.RepliedUsers} not found");
-					userIds = new HashSet<long>();
-				}
-
-				var repliedUsersIds = (HashSet<long>)userIds;
-
-				if (!repliedUsersIds.Contains(message.From.Id) &&
-					message.From != null &&
-					(message.Chat.Type == ChatType.Private || _chatsService.FrequencyCheck()))
-				{
-					var excludedUsers = _chatsService.GetExcludedUsers();
-					string username = message.From.Username ?? message.From.Id.ToString();
-
-					if (!excludedUsers.Any(name => name == username))
-					{
-						var replyMessage = await _chatsService.GetRandomMessageAsync();
-						await _botClient.SendMessageAsync(
-							message.Chat,
-							replyMessage.Text,
-							replyToMessageId: message.MessageId,
-							parseMode: ParseMode.Markdown);
-
-						repliedUsersIds.Add(message.From.Id);
-
-						return ActionResult.Succeed;
-					}
-				}
+				_logger.LogWarning($"metadata key {MetadataKeys.RepliedUsers} not found");
+				userIds = new HashSet<long>();
 			}
 
-			return ActionResult.NotExecuted;
+			var repliedUsersIds = (HashSet<long>)userIds;
+			var replyMessage = await _chatsService.GetRandomMessageAsync();
+
+			await _botClient.SendMessageAsync(
+				message.Chat,
+				replyMessage.Text,
+				replyToMessageId: message.MessageId,
+				parseMode: ParseMode.Markdown);
+
+			repliedUsersIds.Add(message.From.Id);
+
+			return ActionResult.Succeed;
 		}
 	}
 }

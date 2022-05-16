@@ -1,6 +1,7 @@
 ﻿using EchoBot.Core.Business.ChatsService;
 using EchoBot.Core.Business.TemplateParser;
 using EchoBot.Telegram.Actions;
+using EchoBot.Telegram.Actions.Filters;
 using EchoBot.Telegram.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
@@ -30,11 +31,21 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 			var commandTypes = Assembly
 				.GetExecutingAssembly()
 				.GetTypes()
-				.Where(type => typeof(IAction).IsAssignableFrom(type));
+				.Where(type => typeof(IAction).IsAssignableFrom(type) && !type.IsAbstract);
+
+			var filterTypes = Assembly
+				.GetExecutingAssembly()
+				.GetTypes()
+				.Where(type => typeof(IActionFilter).IsAssignableFrom(type) && !type.IsAbstract);
 
 			foreach (var type in commandTypes)
 			{
 				services.AddSingleton(typeof(IAction), type);
+			}
+
+			foreach (var type in filterTypes)
+			{
+				services.AddSingleton(type);
 			}
 
 			return services;

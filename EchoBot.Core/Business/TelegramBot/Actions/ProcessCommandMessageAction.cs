@@ -1,20 +1,25 @@
-﻿using EchoBot.Telegram.Actions;
+﻿using EchoBot.Core.Business.TelegramBot.Actions.Filters;
+using EchoBot.Telegram.Actions;
+using EchoBot.Telegram.Actions.Filters;
 using EchoBot.Telegram.Commands;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 namespace EchoBot.Core.Business.TelegramBot.Actions
 {
-	public class ProcessCommandsAction : ActionBase
+	[ActionFilter(typeof(MessageNotEmptyActionFilter))]
+	public class ProcessCommandMessageAction : ActionBase
 	{
 		private readonly IBotCommandRepository _commandRepository;
 
-		public ProcessCommandsAction(
+		public ProcessCommandMessageAction(
 			IBotCommandRepository commandRepository,
-			ILogger<ProcessCommandsAction> logger)
-			: base(logger)
+			IServiceProvider serviceProvider,
+			ILogger<ProcessCommandMessageAction> logger)
+			: base(serviceProvider, logger)
 		{
 			_commandRepository = commandRepository;
 		}
@@ -26,14 +31,12 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 		public override async Task<ActionResult> ExecuteCoreAsync(Update update, Dictionary<string, object> metadata)
 		{
 			var message = update.Message;
-			if (message != null)
+			var command = _commandRepository.GetCommandByName(message.Text);
+
+			if (command != null)
 			{
-				var command = _commandRepository.GetCommandByName(message.Text);
-				if (command != null)
-				{
-					await command.ExecuteCommandAsync(message);
-					return ActionResult.Succeed;
-				}
+				await command.ExecuteCommandAsync(message);
+				return ActionResult.Succeed;
 			}
 
 			return ActionResult.NotExecuted;

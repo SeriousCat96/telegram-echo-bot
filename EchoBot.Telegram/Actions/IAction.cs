@@ -4,10 +4,8 @@ using Telegram.Bot.Types;
 
 namespace EchoBot.Telegram.Actions
 {
-	public interface IAction
+	public interface IAction : ISortable
 	{
-		int Order { get; }
-
 		ActionPipelineBehavior PipelineBehavior { get; }
 
 		Task<ActionResult> ExecuteAsync(Update update, Dictionary<string, object> metadata);
