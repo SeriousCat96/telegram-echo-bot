@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -14,11 +15,15 @@ namespace EchoBot.Telegram
 {
 	public class EchoTelegramBotClient : IEchoTelegramBotClient
 	{
+		private readonly ILogger<EchoTelegramBotClient> _logger;
 		private readonly TelegramBotOptions _options;
 		private readonly TelegramBotClient _bot;
 
-		public EchoTelegramBotClient(IOptions<TelegramBotOptions> options)
+		public EchoTelegramBotClient(
+			ILogger<EchoTelegramBotClient> logger,
+			IOptions<TelegramBotOptions> options)
 		{
+			_logger = logger;
 			_options = options.Value;
 			_bot = new TelegramBotClient(_options.Token);
 		}
@@ -40,6 +45,7 @@ namespace EchoBot.Telegram
 			IReplyMarkup replyMarkup = default,
 			CancellationToken cancellationToken = default)
 		{
+			_logger.LogDebug("Message: {0} to {1}", text, chatId);
 			return _bot.SendTextMessageAsync(
 				chatId,
 				text,

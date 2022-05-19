@@ -27,7 +27,7 @@ namespace EchoBot.Telegram
 			bool? disableNotification = default,
 			int? replyToMessageId = default,
 			bool? allowSendingWithoutReply = default,
-			IReplyMarkup? replyMarkup = default,
+			IReplyMarkup replyMarkup = default,
 			CancellationToken cancellationToken = default);
 
 		Task<ChatMember> GetChatMemberAsync(
