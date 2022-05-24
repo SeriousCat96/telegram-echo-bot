@@ -45,7 +45,7 @@ namespace EchoBot.Telegram
 			IReplyMarkup replyMarkup = default,
 			CancellationToken cancellationToken = default)
 		{
-			_logger.LogDebug("Message: \"{0}\" to {1}", text, chatId);
+			_logger.LogInformation("Message: \"{0}\" to {1}", text, chatId);
 			return _bot.SendTextMessageAsync(
 				chatId,
 				text,
