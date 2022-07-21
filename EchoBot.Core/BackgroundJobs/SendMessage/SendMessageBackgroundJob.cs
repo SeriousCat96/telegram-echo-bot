@@ -1,6 +1,8 @@
 ﻿using EchoBot.Core.Business.ChatsService;
+using EchoBot.Core.Options;
 using EchoBot.Telegram;
 using Microsoft.Extensions.Options;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
@@ -10,12 +12,12 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 {
 	public class SendMessageBackgroundJob
 	{
-		private readonly EchoChatOptions _options;
+		private readonly BotsOptions _options;
 		private readonly IEchoTelegramBotClient _botClient;
 		private readonly IEchoChatsService _chatsService;
 
 		public SendMessageBackgroundJob(
-			IOptions<EchoChatOptions> options,
+			IOptions<BotsOptions> options,
 			IEchoTelegramBotClient botClient,
 			IEchoChatsService chatsService)
 		{
@@ -24,18 +26,24 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 			_chatsService = chatsService;
 		}
 
-		public async Task ExecuteAsync(CancellationToken cancellationToken = default)
+		public async Task ExecuteAsync(int botId, CancellationToken cancellationToken = default)
 		{
-			var message = await _chatsService.GetRandomMessageAsync();
+			var message = await _chatsService.GetRandomMessageAsync(botId);
+			var botOptions = _options.Bots.Where(bot => bot.Id == botId).FirstOrDefault();
+
+			if (botOptions == null)
+			{
+				return;
+			}
 
 			ChatId chat;
-			if (long.TryParse(_options.ChatId, out long chatId))
+			if (long.TryParse(botOptions.ChatOptions.ChatId, out long chatId))
 			{
 				chat = chatId;
 			}
 			else
 			{
-				chat = _options.ChatId;
+				chat = botOptions.ChatOptions.ChatId;
 			}
 
 			await _botClient.SendMessageAsync(

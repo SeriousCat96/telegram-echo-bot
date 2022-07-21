@@ -9,6 +9,8 @@ namespace EchoBot.Telegram
 {
 	public interface IEchoTelegramBotClient
 	{
+		User User { get; }
+
 		Task<User> GetMeAsync(CancellationToken cancellationToken = default);
 
 		Task<Update[]> GetUpdatesAsync(

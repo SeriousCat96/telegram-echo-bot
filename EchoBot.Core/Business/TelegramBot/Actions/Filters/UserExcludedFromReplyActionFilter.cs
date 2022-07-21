@@ -1,4 +1,5 @@
 ﻿using EchoBot.Core.Business.ChatsService;
+using EchoBot.Telegram.Actions;
 using System.Collections.Generic;
 using System.Linq;
 using Telegram.Bot.Types;
@@ -16,10 +17,13 @@ namespace EchoBot.Core.Business.TelegramBot.Actions.Filters
 			_chatsService = chatsService;
 		}
 
-		public override bool IsAllowed(Update update, Dictionary<string, object> metadata) 
-			=> base.IsAllowed(update, metadata)
-			&& !_chatsService
-					.GetExcludedUsers()
-					.Any(name => name == (update.Message.From.Username ?? update.Message.From.Id.ToString()));
+		public override bool IsAllowed(Update update, Dictionary<string, object> metadata)
+		{
+			metadata.TryGetValue(MetadataKeys.BotId, out var botId);
+			return base.IsAllowed(update, metadata)
+				&& !_chatsService
+						.GetExcludedUsers((int)botId)
+						.Any(name => name == (update.Message.From.Username ?? update.Message.From.Id.ToString()));
+		}
 	}
 }

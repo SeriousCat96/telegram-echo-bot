@@ -1,4 +1,4 @@
-﻿namespace EchoBot.Core.BackgroundJobs.SendMessage
+﻿namespace EchoBot.Telegram.Options
 {
 	public class SendMessageOptions
 	{

@@ -5,6 +5,6 @@ namespace EchoBot.Telegram.Commands
 {
 	public interface IBotCommand
 	{
-		Task ExecuteCommandAsync(Message message);
+		Task ExecuteCommandAsync(Message message, int botId);
 	}
 }

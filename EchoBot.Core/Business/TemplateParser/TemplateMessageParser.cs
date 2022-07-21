@@ -1,31 +1,31 @@
-﻿using EchoBot.Core.Business.ChatsService;
-using EchoBot.Core.Business.TelegramBot.Models;
+﻿using EchoBot.Core.Business.TelegramBot.Models;
+using EchoBot.Core.Options;
 using EchoBot.Telegram;
+using EchoBot.Telegram.Engine;
+using EchoBot.Telegram.Options;
 using Microsoft.Extensions.Options;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EchoBot.Core.Business.TemplateParser
 {
 	public class TemplateMessageParser : ITemplateMessageParser
 	{
-		private readonly IEchoTelegramBotClient _botClient;
-		private readonly EchoChatOptions _chatOptions;
-		private readonly TemplateOptions _templateOptions;
+		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
+		private readonly BotsOptions _options;
 		private readonly Random _rnd;
 
 		public TemplateMessageParser(
-			IEchoTelegramBotClient botClient,
-			IOptions<EchoChatOptions> chatOptions,
-			IOptions<TemplateOptions> templateOptions)
+			ITelegramBotInstanceRepository botInstanceRepository,
+			IOptions<BotsOptions> options)
 		{
-			_botClient = botClient;
-			_chatOptions = chatOptions.Value;
-			_templateOptions = templateOptions.Value;
+			_botInstanceRepository = botInstanceRepository;
+			_options = options.Value;
 			_rnd = new Random();
 		}
 
-		public async Task<TelegramMessage> ParseTemplateAsync(string template)
+		public async Task<TelegramMessage> ParseTemplateAsync(string template, int botId)
 		{
 			if (string.IsNullOrWhiteSpace(template))
 			{
@@ -40,7 +40,11 @@ namespace EchoBot.Core.Business.TemplateParser
 				};
 			}
 
-			var users = _chatOptions.Users;
+			var botOptions = _options.Bots.Where(bot => bot.Id == botId).FirstOrDefault();
+			var chatOptions = botOptions.ChatOptions;
+			var templateOptions = botOptions.Templates;
+
+			var users = chatOptions.Users;
 
 			int from = 0;
 			int to = users.Length;
@@ -48,7 +52,7 @@ namespace EchoBot.Core.Business.TemplateParser
 
 			if (users.Length == 0)
 			{
-				username = _templateOptions.Fallbacks.Username;
+				username = templateOptions.Fallbacks.Username;
 			}
 			else
 			{
@@ -63,7 +67,9 @@ namespace EchoBot.Core.Business.TemplateParser
 				};
 			}
 
-			var chatMember = await _botClient.GetChatMemberAsync(_chatOptions.ChatId, userId);
+			var botInstance = _botInstanceRepository.GetInstance(botId);
+
+			var chatMember = await botInstance.Client.GetChatMemberAsync(chatOptions.ChatId, userId);
 			var user = chatMember.User;
 			username = user.FirstName;
 			

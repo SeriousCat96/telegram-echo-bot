@@ -1,5 +1,4 @@
-﻿using EchoBot.Telegram.Actions.Filters;
-using EchoBot.Telegram.Users;
+﻿using EchoBot.Telegram.Actions;
 using System.Collections.Generic;
 using Telegram.Bot.Types;
 
@@ -7,17 +6,13 @@ namespace EchoBot.Core.Business.TelegramBot.Actions.Filters
 {
 	public class MessageToBotActionFilter : MessageNotEmptyActionFilter
 	{
-		private readonly ICurrentUser _currentUser;
-
 		public override int Order => 20;
 
-		public MessageToBotActionFilter(ICurrentUser currentUser)
+		public override bool IsAllowed(Update update, Dictionary<string, object> metadata)
 		{
-			_currentUser = currentUser;
+			metadata.TryGetValue(MetadataKeys.User, out var user);
+			return base.IsAllowed(update, metadata)
+					   && (user as User)?.Id == update.Message.ReplyToMessage?.From?.Id;
 		}
-
-		public override bool IsAllowed(Update update, Dictionary<string, object> metadata) 
-			=> base.IsAllowed(update, metadata)
-			&& _currentUser.User?.Id == update.Message.ReplyToMessage?.From?.Id;
 	}
 }

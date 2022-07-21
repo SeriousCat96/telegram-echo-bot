@@ -3,6 +3,7 @@ using EchoBot.Core.Business.TelegramBot.Actions.Filters;
 using EchoBot.Telegram;
 using EchoBot.Telegram.Actions;
 using EchoBot.Telegram.Actions.Filters;
+using EchoBot.Telegram.Engine;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -19,17 +20,17 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 	public class ProcessReplyMessageAction : ActionBase
 	{
 		private readonly ILogger<ProcessReplyMessageAction> _logger;
-		private readonly IEchoTelegramBotClient _botClient;
+		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
 		private readonly IEchoChatsService _chatsService;
 
 		public ProcessReplyMessageAction(
-			IEchoTelegramBotClient botClient,
+			ITelegramBotInstanceRepository botInstanceRepository,
 			IEchoChatsService chatsService,
 			IServiceProvider serviceProvider,
 			ILogger<ProcessReplyMessageAction> logger)
 			: base(serviceProvider, logger)
 		{
-			_botClient = botClient;
+			_botInstanceRepository = botInstanceRepository;
 			_chatsService = chatsService;
 			_logger = logger;
 		}
@@ -48,10 +49,12 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 				userIds = new HashSet<long>();
 			}
 
+			var botId = GetBotId(metadata);
 			var repliedUsersIds = (HashSet<long>)userIds;
-			var replyMessage = await _chatsService.GetRandomMessageAsync();
+			var replyMessage = await _chatsService.GetRandomMessageAsync(botId);
+			var botInstance = _botInstanceRepository.GetInstance(botId);
 
-			await _botClient.SendMessageAsync(
+			await botInstance.Client.SendMessageAsync(
 				message.Chat,
 				replyMessage.Text,
 				replyToMessageId: message.MessageId,

@@ -1,6 +1,4 @@
-﻿using EchoBot.Core.BackgroundJobs.SendMessage;
-
-namespace EchoBot.Core.BackgroundJobs
+﻿namespace EchoBot.Telegram.Options
 {
 	public class BackgroundJobOptions
 	{

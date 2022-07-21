@@ -2,6 +2,6 @@
 {
 	public interface IBotCommandRepository
 	{
-		IBotCommand GetCommandByName(string name);
+		IBotCommand GetCommandByName(string name, string username);
 	}
 }

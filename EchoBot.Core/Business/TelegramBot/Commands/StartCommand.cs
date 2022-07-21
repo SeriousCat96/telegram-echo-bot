@@ -1,6 +1,6 @@
 ﻿using EchoBot.Core.Business.Commands;
-using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
+using EchoBot.Telegram.Engine;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -14,15 +14,16 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 	[BotCommand("/help", "shows list of commands")]
 	public class StartCommand : IBotCommand
 	{
-		private readonly IEchoTelegramBotClient _botClient;
+		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
 
-		public StartCommand(IEchoTelegramBotClient botClient)
+		public StartCommand(ITelegramBotInstanceRepository botInstanceRepository)
 		{
-			_botClient = botClient;
+			_botInstanceRepository = botInstanceRepository;
 		}
 
-		public Task ExecuteCommandAsync(Message message)
+		public Task ExecuteCommandAsync(Message message, int botId)
 		{
+			var botInstance = _botInstanceRepository.GetInstance(botId);
 			var cmds = Assembly
 				.GetExecutingAssembly()
 				.GetTypes()
@@ -36,7 +37,7 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 
 			var text = string.Join(Environment.NewLine, cmds);
 
-			return _botClient.SendMessageAsync(message.Chat, text, parseMode: ParseMode.Markdown);
+			return botInstance.Client.SendMessageAsync(message.Chat, text, parseMode: ParseMode.Markdown);
 		}
 	}
 }

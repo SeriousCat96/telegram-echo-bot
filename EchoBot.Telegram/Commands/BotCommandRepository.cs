@@ -1,5 +1,4 @@
-﻿using EchoBot.Telegram.Users;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -10,12 +9,10 @@ namespace EchoBot.Telegram.Commands
 	{
 		private static readonly Regex _commandExpr = new Regex(@"^(?<commandName>/[a-zA-Z0-9_]+)+(?<botName>@[a-zA-Z0-9_]+)?", RegexOptions.Compiled);
 		
-		private readonly ICurrentUser _currentUser;
 		private readonly Dictionary<string, IBotCommand> _commands;
 
-		public BotCommandRepository(IEnumerable<IBotCommand> commands, ICurrentUser currentUser)
+		public BotCommandRepository(IEnumerable<IBotCommand> commands)
 		{
-			_currentUser = currentUser;
 			_commands = new Dictionary<string, IBotCommand>();
 			foreach (var command in commands)
 			{
@@ -27,14 +24,14 @@ namespace EchoBot.Telegram.Commands
 			}
 		}
 
-		public IBotCommand GetCommandByName(string name)
+		public IBotCommand GetCommandByName(string name, string username)
 		{
 			if (string.IsNullOrWhiteSpace(name))
 			{
 				return null;
 			}
 
-			var commandName = GetCommandName(name);
+			var commandName = GetCommandName(name, username);
 			if (string.IsNullOrWhiteSpace(commandName))
 			{
 				return null;
@@ -44,7 +41,7 @@ namespace EchoBot.Telegram.Commands
 			return command;
 		}
 
-		private string GetCommandName(string input)
+		private string GetCommandName(string input, string username)
 		{
 			var match = _commandExpr.Match(input);
 			if (!match.Success)
@@ -59,7 +56,7 @@ namespace EchoBot.Telegram.Commands
 			}
 
 			var botNameGroupMatch = match.Groups["botName"];
-			if (!string.IsNullOrWhiteSpace(botNameGroupMatch.Value) && $"@{_currentUser.User.Username}" != botNameGroupMatch.Value)
+			if (!string.IsNullOrWhiteSpace(botNameGroupMatch.Value) && username != botNameGroupMatch.Value)
 			{
 				return null;
 			}

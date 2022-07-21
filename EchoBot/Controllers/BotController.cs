@@ -1,4 +1,4 @@
-﻿using EchoBot.Telegram;
+﻿using EchoBot.Telegram.Engine;
 using EchoBot.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -10,24 +10,36 @@ namespace EchoBot.WebApp.Controllers
 	[Route("api/bot")]
 	public class BotController : Controller
 	{
-		private readonly IEchoTelegramBotClient _telegramBotClient;
+		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
 
-		public BotController(IEchoTelegramBotClient telegramBotClient)
+		public BotController(ITelegramBotInstanceRepository botInstanceRepository)
 		{
-			_telegramBotClient = telegramBotClient;
+			_botInstanceRepository = botInstanceRepository;
 		}
 
 		[HttpPost, Route("test")]
-		public async Task<IActionResult> TestApiAsync()
+		public async Task<IActionResult> TestApiAsync(int botId)
 		{
-			var result = await _telegramBotClient.TestApiAsync();
+			var botInstance = _botInstanceRepository.GetInstance(botId);
+			if (botInstance == null)
+			{
+				return NotFound();
+			}
+
+			var result = await botInstance.Client.TestApiAsync();
 			return Json(result);
 		}
 
 		[HttpPost, Route("message")]
-		public async Task<IActionResult> SendMessageAsync([FromBody] SendMessageModel messageModel)
+		public async Task<IActionResult> SendMessageAsync(int botId, [FromBody] SendMessageModel messageModel)
 		{
-			var result = await _telegramBotClient.SendMessageAsync(
+			var botInstance = _botInstanceRepository.GetInstance(botId);
+			if (botInstance == null)
+			{
+				return NotFound();
+			}
+
+			var result = await botInstance.Client.SendMessageAsync(
 				messageModel.ChatId, 
 				messageModel.Message, 
 				replyToMessageId: messageModel.ReplyToMessageId,

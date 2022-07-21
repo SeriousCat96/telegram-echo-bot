@@ -55,5 +55,17 @@ namespace EchoBot.Telegram.Actions
 		}
 
 		public abstract Task<ActionResult> ExecuteCoreAsync(Update update, Dictionary<string, object> metadata);
+
+		protected User GetCurrentUser(Dictionary<string, object> metadata)
+		{
+			metadata.TryGetValue(MetadataKeys.User, out var user);
+			return (User)user;
+		}
+		
+		protected int GetBotId(Dictionary<string, object> metadata)
+		{
+			metadata.TryGetValue(MetadataKeys.BotId, out var botId);
+			return (int)botId;
+		}
 	}
 }

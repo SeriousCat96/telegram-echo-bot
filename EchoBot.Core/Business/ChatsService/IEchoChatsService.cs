@@ -5,9 +5,9 @@ namespace EchoBot.Core.Business.ChatsService
 {
 	public interface IEchoChatsService
 	{
-		Task<TelegramMessage> GetRandomMessageAsync();
-		string[] GetExcludedUsers();
-		string[] GetUsers();
-		bool FrequencyCheck();
+		Task<TelegramMessage> GetRandomMessageAsync(int botId);
+		string[] GetExcludedUsers(int botId);
+		string[] GetUsers(int botId);
+		bool FrequencyCheck(int botId);
 	}
 }

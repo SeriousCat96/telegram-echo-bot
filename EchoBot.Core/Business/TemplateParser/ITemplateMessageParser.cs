@@ -5,6 +5,6 @@ namespace EchoBot.Core.Business.TemplateParser
 {
 	public interface ITemplateMessageParser
 	{
-		Task<TelegramMessage> ParseTemplateAsync(string template);
+		Task<TelegramMessage> ParseTemplateAsync(string template, int botId);
 	}
 }

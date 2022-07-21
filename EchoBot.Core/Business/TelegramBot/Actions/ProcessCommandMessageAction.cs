@@ -31,11 +31,12 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 		public override async Task<ActionResult> ExecuteCoreAsync(Update update, Dictionary<string, object> metadata)
 		{
 			var message = update.Message;
-			var command = _commandRepository.GetCommandByName(message.Text);
+			var user = GetCurrentUser(metadata);
+			var command = _commandRepository.GetCommandByName(message.Text, $"@{user.Username}");
 
 			if (command != null)
 			{
-				await command.ExecuteCommandAsync(message);
+				await command.ExecuteCommandAsync(message, GetBotId(metadata));
 				return ActionResult.Succeed;
 			}
 

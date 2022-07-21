@@ -1,12 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
+﻿using EchoBot.Core.Options;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -15,16 +12,26 @@ namespace EchoBot.Telegram
 {
 	public class EchoTelegramBotClient : IEchoTelegramBotClient
 	{
+		private User _user;
 		private readonly ILogger<EchoTelegramBotClient> _logger;
-		private readonly TelegramBotOptions _options;
+		private readonly BotOptions _options;
 		private readonly TelegramBotClient _bot;
+
+		public User User
+		{
+			get
+			{
+				EnsureUserExists();
+				return _user;
+			}
+		}
 
 		public EchoTelegramBotClient(
 			ILogger<EchoTelegramBotClient> logger,
-			IOptions<TelegramBotOptions> options)
+			BotOptions options)
 		{
 			_logger = logger;
-			_options = options.Value;
+			_options = options;
 			_bot = new TelegramBotClient(_options.Token);
 		}
 
@@ -45,7 +52,7 @@ namespace EchoBot.Telegram
 			IReplyMarkup replyMarkup = default,
 			CancellationToken cancellationToken = default)
 		{
-			_logger.LogInformation("Message: \"{0}\" to {1}", text, chatId);
+			_logger.LogInformation("Message ({0}): \"{1}\" to {2}", _user.Username, text, chatId);
 			return _bot.SendTextMessageAsync(
 				chatId,
 				text,
@@ -83,6 +90,17 @@ namespace EchoBot.Telegram
 			CancellationToken cancellationToken = default)
 		{
 			return _bot.GetUpdatesAsync(offset, limit, timeout, allowedUpdates, cancellationToken);
+		}
+
+		private void EnsureUserExists()
+		{
+			if (_user == null)
+			{
+				_user = GetMeAsync()
+					.ConfigureAwait(continueOnCapturedContext: false)
+					.GetAwaiter()
+					.GetResult();
+			}
 		}
 	}
 }

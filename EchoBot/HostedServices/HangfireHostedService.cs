@@ -1,5 +1,6 @@
-﻿using EchoBot.Core.BackgroundJobs;
-using EchoBot.Core.BackgroundJobs.SendMessage;
+﻿using EchoBot.Core.BackgroundJobs.SendMessage;
+using EchoBot.Core.Options;
+using EchoBot.Telegram.Engine;
 using EchoBot.WebApp.Core;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,36 +13,47 @@ namespace EchoBot.WebApp.HostedServices
 {
 	public class HangfireHostedService : CriticalHostedService
 	{
+		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
 		private readonly IRecurringJobManager _recurringJobManager;
-		private readonly BackgroundJobOptions _backgroundJobOptions;
+		private readonly BotOptions[] _botsOptions;
 
 		public HangfireHostedService(
+			ITelegramBotInstanceRepository botInstanceRepository,
 			IRecurringJobManager recurringJobManager,
-			IOptions<BackgroundJobOptions> backgroundJobOptions,
+			IOptions<BotsOptions> backgroundJobOptions,
 			ILogger<HangfireHostedService> logger,
 			IServiceScopeFactory serviceScopeFactory)
 			: base(logger, serviceScopeFactory)
 		{
+			_botInstanceRepository = botInstanceRepository;
 			_recurringJobManager = recurringJobManager;
-			_backgroundJobOptions = backgroundJobOptions.Value;
+			_botsOptions = backgroundJobOptions.Value.Bots;
 		}
 
 		protected override Task StartServiceAsync(CancellationToken cancellationToken)
 		{
-			if (_backgroundJobOptions.SendMessage.IsEnabled)
+			foreach (var botOptions in _botsOptions)
 			{
-				_recurringJobManager.AddOrUpdate<SendMessageBackgroundJob>(
-					nameof(_backgroundJobOptions.SendMessage),
-					job => job.ExecuteAsync(cancellationToken),
-					_backgroundJobOptions.SendMessage.CronExpression);
+				if (botOptions.BackgroundJobs.SendMessage.IsEnabled)
+				{
+					_recurringJobManager.AddOrUpdate<SendMessageBackgroundJob>(
+						$"{nameof(botOptions.BackgroundJobs.SendMessage)}{botOptions.Id}",
+						job => job.ExecuteAsync(botOptions.Id, cancellationToken),
+						botOptions.BackgroundJobs.SendMessage.CronExpression);
+				}
 			}
+
 
 			return Task.CompletedTask;
 		}
 
 		protected override Task StopServiceAsync(CancellationToken cancellationToken)
 		{
-			_recurringJobManager.RemoveIfExists(nameof(_backgroundJobOptions.SendMessage));
+			foreach (var botOptions in _botsOptions)
+			{
+				_recurringJobManager.RemoveIfExists($"{nameof(botOptions.BackgroundJobs.SendMessage)}{botOptions.Id}");
+			}
+			
 
 			return Task.CompletedTask;
 		}

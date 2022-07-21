@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EchoBot.Core.Business.ChatsService
+namespace EchoBot.Telegram.Options
 {
 	public class EchoChatOptions
 	{

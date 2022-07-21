@@ -1,4 +1,4 @@
-﻿namespace EchoBot.Core.Business.TemplateParser
+﻿namespace EchoBot.Telegram.Options
 {
 	public class TemplateOptions
 	{

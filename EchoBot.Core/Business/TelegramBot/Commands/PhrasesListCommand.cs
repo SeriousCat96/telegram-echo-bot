@@ -1,6 +1,7 @@
-﻿using EchoBot.Core.Business.ChatsService;
-using EchoBot.Telegram;
+﻿using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
+using EchoBot.Telegram.Engine;
+using EchoBot.Telegram.Options;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -13,17 +14,17 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 	[BotCommand("/phrases", "shows list of phrases")]
 	public class PhrasesListCommand : IBotCommand
 	{
-		private readonly IEchoTelegramBotClient _botClient;
+		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
 		private readonly EchoChatOptions _chatOptions;
 		public PhrasesListCommand(
-			IEchoTelegramBotClient botClient,
+			ITelegramBotInstanceRepository botInstanceRepository,
 			IOptions<EchoChatOptions> chatOptions)
 		{
-			_botClient = botClient;
+			_botInstanceRepository = botInstanceRepository;
 			_chatOptions = chatOptions.Value;
 		}
 
-		public async Task ExecuteCommandAsync(Message message)
+		public async Task ExecuteCommandAsync(Message message, int botId)
 		{
 			const int maxMessageLength = 4096;
 
@@ -31,6 +32,7 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 			var phrases = new List<string>();
 			int totalLength = 0;
 			int newLineLength = Environment.NewLine.Length;
+			var botInstance = _botInstanceRepository.GetInstance(botId);
 
 			for (int i = 0; i < messages.Length; ++i)
 			{
@@ -38,7 +40,7 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 				
 				if (totalLength + phrase.Length + newLineLength > maxMessageLength)
 				{
-					await _botClient.SendMessageAsync(
+					await botInstance.Client.SendMessageAsync(
 						message.Chat,
 						string.Join(Environment.NewLine, phrases),
 						parseMode: ParseMode.Markdown);
@@ -53,7 +55,7 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 
 			if (phrases.Count > 0)
 			{
-				await _botClient.SendMessageAsync(
+				await botInstance.Client.SendMessageAsync(
 					message.Chat,
 					string.Join(Environment.NewLine, phrases),
 					parseMode: ParseMode.Markdown);
