@@ -35,7 +35,7 @@ namespace EchoBot.Core.Business.ChatsService
 		public async Task<TelegramMessage> GetRandomMessageAsync()
 		{
 			int from = 0;
-			int to = _options.Messages.Length - 1;
+			int to = _options.Messages.Length;
 
 			var text = _options.Messages[_rnd.Next(from, to)];
 			return await _templateParser.ParseTemplateAsync(text);
