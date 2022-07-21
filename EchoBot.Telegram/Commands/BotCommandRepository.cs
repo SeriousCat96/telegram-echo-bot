@@ -59,7 +59,7 @@ namespace EchoBot.Telegram.Commands
 			}
 
 			var botNameGroupMatch = match.Groups["botName"];
-			if (commandNameGroupMatch.Success && $"@{_currentUser.User.Username}" != botNameGroupMatch.Value)
+			if (!string.IsNullOrWhiteSpace(botNameGroupMatch.Value) && $"@{_currentUser.User.Username}" != botNameGroupMatch.Value)
 			{
 				return null;
 			}
