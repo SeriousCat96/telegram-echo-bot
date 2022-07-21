@@ -22,11 +22,15 @@ namespace EchoBot.Telegram.Users
 			}
 		}
 
-		private async void EnsureUserExists()
+		private void EnsureUserExists()
 		{
 			if (_user == null)
 			{
-				_user = await _botClient.GetMeAsync();
+				_user = _botClient
+					.GetMeAsync()
+					.ConfigureAwait(continueOnCapturedContext: false)
+					.GetAwaiter()
+					.GetResult();
 			}
 		}
 	}

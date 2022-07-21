@@ -65,6 +65,12 @@ namespace EchoBot.Telegram.Engine
 				foreach (var update in updates)
 				{
 					_offset = update.Id + 1;
+
+					if (update.Message != null)
+					{
+						_logger.LogDebug("Incoming message: \"{0}\" from {1}", update.Message.Text, update.Message.Chat.Id);
+					}
+
 					await _actionsExecutor.ExecuteAsync(update, metadata);
 				}
 			}

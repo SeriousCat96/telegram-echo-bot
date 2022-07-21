@@ -43,7 +43,7 @@ namespace EchoBot.Core.Business.TemplateParser
 			var users = _chatOptions.Users;
 
 			int from = 0;
-			int to = users.Length - 1;
+			int to = users.Length;
 			string username;
 
 			if (users.Length == 0)
