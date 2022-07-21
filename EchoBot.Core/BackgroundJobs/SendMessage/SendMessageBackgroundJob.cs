@@ -1,6 +1,6 @@
 ﻿using EchoBot.Core.Business.ChatsService;
 using EchoBot.Core.Options;
-using EchoBot.Telegram;
+using EchoBot.Telegram.Engine;
 using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Threading;
@@ -13,16 +13,16 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 	public class SendMessageBackgroundJob
 	{
 		private readonly BotsOptions _options;
-		private readonly IEchoTelegramBotClient _botClient;
+		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
 		private readonly IEchoChatsService _chatsService;
 
 		public SendMessageBackgroundJob(
 			IOptions<BotsOptions> options,
-			IEchoTelegramBotClient botClient,
+			ITelegramBotInstanceRepository botInstanceRepositoryt,
 			IEchoChatsService chatsService)
 		{
 			_options = options.Value;
-			_botClient = botClient;
+			_botInstanceRepository = botInstanceRepositoryt;
 			_chatsService = chatsService;
 		}
 
@@ -46,7 +46,9 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 				chat = botOptions.ChatOptions.ChatId;
 			}
 
-			await _botClient.SendMessageAsync(
+			var botInstance = _botInstanceRepository.GetInstance(botId);
+
+			await botInstance.Client.SendMessageAsync(
 				chat,
 				message.Text,
 				parseMode: ParseMode.Markdown,
