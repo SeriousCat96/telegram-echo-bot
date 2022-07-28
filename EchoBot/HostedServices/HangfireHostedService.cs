@@ -41,6 +41,13 @@ namespace EchoBot.WebApp.HostedServices
 						job => job.ExecuteAsync(botOptions.Id, cancellationToken),
 						botOptions.BackgroundJobs.SendMessage.CronExpression);
 				}
+				if (botOptions.BackgroundJobs.Ping.IsEnabled)
+				{
+					_recurringJobManager.AddOrUpdate<PingBackgroundJob>(
+						$"{nameof(botOptions.BackgroundJobs.Ping)}{botOptions.Id}",
+						job => job.ExecuteAsync(botOptions.Id, cancellationToken),
+						botOptions.BackgroundJobs.Ping.CronExpression);
+				}
 			}
 
 
@@ -52,6 +59,7 @@ namespace EchoBot.WebApp.HostedServices
 			foreach (var botOptions in _botsOptions)
 			{
 				_recurringJobManager.RemoveIfExists($"{nameof(botOptions.BackgroundJobs.SendMessage)}{botOptions.Id}");
+				_recurringJobManager.RemoveIfExists($"{nameof(botOptions.BackgroundJobs.Ping)}{botOptions.Id}");
 			}
 			
 

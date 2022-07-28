@@ -1,10 +1,12 @@
-﻿using EchoBot.Telegram;
+﻿using EchoBot.Core.Options;
+using EchoBot.Telegram;
 using EchoBot.Telegram.Commands;
 using EchoBot.Telegram.Engine;
 using EchoBot.Telegram.Options;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -15,20 +17,21 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 	public class PhrasesListCommand : IBotCommand
 	{
 		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
-		private readonly EchoChatOptions _chatOptions;
+		private readonly BotsOptions _botsOptions;
 		public PhrasesListCommand(
 			ITelegramBotInstanceRepository botInstanceRepository,
-			IOptions<EchoChatOptions> chatOptions)
+			IOptions<BotsOptions> botOptions)
 		{
 			_botInstanceRepository = botInstanceRepository;
-			_chatOptions = chatOptions.Value;
+			_botsOptions = botOptions.Value;
 		}
 
 		public async Task ExecuteCommandAsync(Message message, int botId)
 		{
 			const int maxMessageLength = 4096;
 
-			var messages = _chatOptions.Messages;
+			var botOptions = _botsOptions.Bots.Where(bot => bot.Id == botId).FirstOrDefault();
+			var messages = botOptions.ChatOptions.Messages;
 			var phrases = new List<string>();
 			int totalLength = 0;
 			int newLineLength = Environment.NewLine.Length;

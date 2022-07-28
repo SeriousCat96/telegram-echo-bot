@@ -76,7 +76,7 @@ namespace EchoBot.Telegram.Engine
 
 					if (update.Message != null)
 					{
-						_logger.LogDebug("Incoming message ({0}): \"{1}\" from {2}", User.Username, update.Message.Text, update.Message.Chat.Id);
+						_logger.LogDebug("Incoming message ({0}): \"{1}\" from {2} (user: {3})", User.Username, update.Message.Text, update.Message.Chat.Id, update.Message.From);
 					}
 
 					await _actionsExecutor.ExecuteAsync(update, metadata);

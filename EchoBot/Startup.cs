@@ -1,4 +1,6 @@
 using EchoBot.Core.Business.TelegramBot.Commands;
+using EchoBot.Core.Options;
+using EchoBot.Integration;
 using EchoBot.Telegram.Extensions;
 using EchoBot.WebApp.Extensions;
 using EchoBot.WebApp.HostedServices;
@@ -9,6 +11,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Refit;
 using System.Reflection;
 
 namespace EchoBot
@@ -51,6 +55,15 @@ namespace EchoBot
 
 			services.AddHostedService<TelegramBotHostedService>();
 			services.AddHostedService<HangfireHostedService>();
+
+			services
+				.AddRefitClient<IEchoBotHttpClient>()
+				.ConfigureHttpClient((provider, httpClient) =>
+				{
+					var options = provider.GetRequiredService<IOptions<BotsOptions>>();
+
+					httpClient.BaseAddress = options.Value.ClientUrl;
+				});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

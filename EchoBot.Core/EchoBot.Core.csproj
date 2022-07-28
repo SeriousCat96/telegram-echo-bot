@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EchoBot.Integration\EchoBot.Integration.csproj" />
     <ProjectReference Include="..\EchoBot.Telegram\EchoBot.Telegram.csproj" />
   </ItemGroup>
 
