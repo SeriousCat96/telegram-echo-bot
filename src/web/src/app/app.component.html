@@ -1,0 +1,25 @@
+<div class="page-header">
+    <h1>Messages</h1>
+</div>
+<div class="panel">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Id</th>
+                <th>Chat</th>
+                <th>From</th>
+                <th>Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of items" >
+                <td [ngClass]="{'bg-info' : item.fromBot }">{{item.date}}</td>
+                <td [ngClass]="{'bg-info' : item.fromBot }">{{item.id}}</td>
+                <td [ngClass]="{'bg-info' : item.fromBot }">{{item.chat.username ?? item.chat.id}}</td>
+                <td [ngClass]="{'bg-info' : item.fromBot }">{{item.fromUser.username}}</td>
+                <td [ngClass]="{'bg-info' : item.fromBot }">{{item.text}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

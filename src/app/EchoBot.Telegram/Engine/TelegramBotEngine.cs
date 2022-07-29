@@ -1,5 +1,8 @@
-﻿using EchoBot.Core.Options;
+﻿using AutoMapper;
+using EchoBot.Core.Options;
 using EchoBot.Telegram.Actions;
+using EchoBot.Telegram.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -18,6 +21,8 @@ namespace EchoBot.Telegram.Engine
 			IActionsExecutor actionsExecutor,
 			ILoggerFactory loggerFactory,
 			IOptions<BotsOptions> botsOptions,
+			IHubContext<MessagesHub> messageHubContext,
+			IMapper mapper,
 			ITelegramBotInstanceRepository telegramBotInstanceRepository,
 			ILogger<TelegramBotEngine> logger)
 		{
@@ -32,7 +37,9 @@ namespace EchoBot.Telegram.Engine
 				.Bots
 				.Select(opt => new TelegramBotInstance(
 					opt.Id,
-					new EchoTelegramBotClient(clientLogger, opt),
+					messageHubContext,
+					mapper,
+					new EchoTelegramBotClient(messageHubContext, mapper, clientLogger, opt),
 					actionsExecutor,
 					instanceLogger
 				));

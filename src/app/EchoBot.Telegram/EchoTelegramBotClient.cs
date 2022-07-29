@@ -1,4 +1,7 @@
-﻿using EchoBot.Core.Options;
+﻿using AutoMapper;
+using EchoBot.Core.Options;
+using EchoBot.Telegram.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,6 +16,8 @@ namespace EchoBot.Telegram
 	public class EchoTelegramBotClient : IEchoTelegramBotClient
 	{
 		private User _user;
+		private readonly IHubContext<MessagesHub> _messageHubContext;
+		private readonly IMapper _mapper;
 		private readonly ILogger<EchoTelegramBotClient> _logger;
 		private readonly BotOptions _options;
 		private readonly TelegramBotClient _bot;
@@ -27,9 +32,13 @@ namespace EchoBot.Telegram
 		}
 
 		public EchoTelegramBotClient(
+			IHubContext<MessagesHub> messageHubContext,
+			IMapper mapper,
 			ILogger<EchoTelegramBotClient> logger,
 			BotOptions options)
 		{
+			_messageHubContext = messageHubContext;
+			_mapper = mapper;
 			_logger = logger;
 			_options = options;
 			_bot = new TelegramBotClient(_options.Token);
@@ -40,7 +49,7 @@ namespace EchoBot.Telegram
 			return _bot.TestApiAsync(cancellationToken);
 		}
 
-		public Task<Message> SendMessageAsync(
+		public async Task<Message> SendMessageAsync(
 			ChatId chatId,
 			string text,
 			ParseMode? parseMode = default,
@@ -53,7 +62,8 @@ namespace EchoBot.Telegram
 			CancellationToken cancellationToken = default)
 		{
 			_logger.LogInformation("Message ({0}): \"{1}\" to {2}", _user.Username, text, chatId);
-			return _bot.SendTextMessageAsync(
+
+			var message = await _bot.SendTextMessageAsync(
 				chatId,
 				text,
 				parseMode,
@@ -64,6 +74,15 @@ namespace EchoBot.Telegram
 				allowSendingWithoutReply,
 				replyMarkup,
 				cancellationToken);
+
+			var chatMessage = _mapper.Map<ChatMessage>(message);
+			var bot = _mapper.Map<Bot>(User);
+
+			chatMessage.Bot = bot;
+
+			await _messageHubContext.Clients.All.SendAsync("Message", chatMessage, cancellationToken);
+
+			return message;
 		}
 
 		public Task<ChatMember> GetChatMemberAsync(

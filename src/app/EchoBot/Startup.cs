@@ -1,7 +1,10 @@
+using AutoMapper;
 using EchoBot.Core.Business.TelegramBot.Commands;
 using EchoBot.Core.Options;
 using EchoBot.Integration;
+using EchoBot.Telegram;
 using EchoBot.Telegram.Extensions;
+using EchoBot.Telegram.Hubs;
 using EchoBot.WebApp.Extensions;
 using EchoBot.WebApp.HostedServices;
 using Hangfire;
@@ -32,12 +35,18 @@ namespace EchoBot
 		{
 			services.AddMvc();
 			services.AddControllers();
+			services.AddSignalR();
 			services.AddSwaggerDocument(document =>
 			{
 				document.Title = Assembly.GetEntryAssembly().GetName().Name;
 				document.DocumentName = "v1";
 				document.IgnoreObsoleteProperties = true;
 			});
+
+			services.AddSingleton(provider => new MapperConfiguration(cfg =>
+			{
+				cfg.AddProfile(new TelegramMappingProfile());
+			}).CreateMapper());
 
 			services.AddHangfireServer();
 			services.AddHangfire(config =>
@@ -64,6 +73,17 @@ namespace EchoBot
 
 					httpClient.BaseAddress = options.Value.ClientUrl;
 				});
+
+			services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(builder =>
+				{
+					builder
+						.AllowAnyOrigin()
+						.AllowAnyHeader()
+						.AllowAnyMethod();
+				});
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,6 +94,16 @@ namespace EchoBot
 				app.UseDeveloperExceptionPage();
 			}
 
+			app.UseCors(policy =>
+			{
+				policy.AllowAnyMethod();
+				policy.AllowAnyHeader();
+				policy.AllowCredentials();
+				policy.SetIsOriginAllowed(origin => true);
+			});
+
+			app.UseDefaultFiles();
+			app.UseStaticFiles();
 			app.UseOpenApi();
 			app.UseSwaggerUi3();
 			app.UseRouting();
@@ -85,6 +115,8 @@ namespace EchoBot
 					name: "api",
 					pattern: "api/{controller}/{id?}"
 				);
+
+				endpoints.MapHub<MessagesHub>("api/hubs/messages");
 			});
 		}
 	}
