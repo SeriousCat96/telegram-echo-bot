@@ -15,15 +15,18 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 		private readonly BotsOptions _options;
 		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
 		private readonly IEchoChatsService _chatsService;
+		private readonly IVideoService _videoService;
 
 		public SendMessageBackgroundJob(
 			IOptions<BotsOptions> options,
 			ITelegramBotInstanceRepository botInstanceRepositoryt,
-			IEchoChatsService chatsService)
+			IEchoChatsService chatsService,
+			IVideoService videoService)
 		{
 			_options = options.Value;
 			_botInstanceRepository = botInstanceRepositoryt;
 			_chatsService = chatsService;
+			_videoService = videoService;
 		}
 
 		public async Task ExecuteAsync(int botId, CancellationToken cancellationToken = default)
@@ -47,6 +50,18 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 			}
 
 			var botInstance = _botInstanceRepository.GetInstance(botId);
+
+			if (_videoService.FrequencyCheck(botId))
+			{
+				var randomVideo = _videoService.GetRandomVideo(botId);
+
+				if (randomVideo != null)
+				{
+					await botInstance.Client.SendVideoAsync(
+						chat,
+						randomVideo);
+				}
+			}
 
 			await botInstance.Client.SendMessageAsync(
 				chat,

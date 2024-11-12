@@ -22,7 +22,7 @@ namespace EchoBot.Telegram.Actions
 			foreach (var action in actions)
 			{
 				var actionResult = await action.ExecuteAsync(update, metadata);
-				if (actionResult != ActionResult.NotExecuted && action.PipelineBehavior == ActionPipelineBehavior.Break)
+				if ((actionResult != ActionResult.NotExecuted && actionResult != ActionResult.Continue) && action.PipelineBehavior == ActionPipelineBehavior.Break)
 				{
 					break;
 				}

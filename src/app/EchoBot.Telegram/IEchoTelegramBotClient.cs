@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace EchoBot.Telegram
@@ -32,10 +33,27 @@ namespace EchoBot.Telegram
 			IReplyMarkup replyMarkup = default,
 			CancellationToken cancellationToken = default);
 
+		Task<Message> SendVideoAsync(
+			ChatId chatId,
+			InputOnlineFile video,
+			int? replyToMessageId = null,
+			CancellationToken cancellationToken = default);
+
 		Task<ChatMember> GetChatMemberAsync(
 			ChatId chatId,
 			long userId,
 			CancellationToken cancellationToken = default);
+
+		Task SetWebhook(
+			string url,
+			InputFileStream certificate = default,
+			string ipAddress = default,
+			int? maxConnections = default,
+			IEnumerable<UpdateType> allowedUpdates = default,
+			bool? dropPendingUpdates = default,
+			CancellationToken cancellationToken = default);
+
+		Task DeleteWebhook(bool? dropPendingUpdates = default, CancellationToken cancellationToken = default);
 
 		Task<bool> TestApiAsync(CancellationToken cancellationToken = default);
 	}

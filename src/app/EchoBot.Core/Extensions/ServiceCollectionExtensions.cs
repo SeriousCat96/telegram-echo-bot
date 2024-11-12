@@ -54,6 +54,7 @@ namespace EchoBot.Core.Business.TelegramBot.Commands
 		public static IServiceCollection AddTelegramBotServices(this IServiceCollection services)
 		{
 			services.AddSingleton<IEchoChatsService, EchoChatsService>();
+			services.AddSingleton<IVideoService, VideoService>();
 			services.AddSingleton<ITemplateMessageParser, TemplateMessageParser>();
 
 			return services;

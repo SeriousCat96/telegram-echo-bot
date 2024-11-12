@@ -15,32 +15,30 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 	[ActionFilter(typeof(MessageHasSenderActionFilter))]
 	[ActionFilter(typeof(MessageToBotActionFilter))]
 	[ActionFilter(typeof(UserExcludedFromReplyActionFilter))]
-	public class ProcessReplyToBotMessageAction : ActionBase
+	public class ProcessReplyToBotVideoAction : ActionBase
 	{
-		private readonly ILogger<ProcessReplyToBotMessageAction> _logger;
+		private readonly ILogger<ProcessReplyToBotVideoAction> _logger;
 		private readonly ITelegramBotInstanceRepository _botInstanceRepository;
-		private readonly IEchoChatsService _chatsService;
+		private readonly IVideoService _videoService;
 
-		public ProcessReplyToBotMessageAction(
+		public ProcessReplyToBotVideoAction(
 			ITelegramBotInstanceRepository botInstanceRepository,
-			IEchoChatsService chatsService,
+			IVideoService videoService,
 			IServiceProvider serviceProvider,
-			ILogger<ProcessReplyToBotMessageAction> logger)
+			ILogger<ProcessReplyToBotVideoAction> logger)
 			: base(serviceProvider, logger)
 		{
 			_botInstanceRepository = botInstanceRepository;
-			_chatsService = chatsService;
+			_videoService = videoService;
 			_logger = logger;
 		}
 
-		public override int Order => 20;
+		public override int Order => 15;
 
 		public override ActionPipelineBehavior PipelineBehavior => ActionPipelineBehavior.Break;
 
 		public override async Task<ActionResult> ExecuteCoreAsync(Update update, Dictionary<string, object> metadata)
 		{
-			var message = update.Message;
-
 			if (!metadata.TryGetValue(MetadataKeys.RepliedUsers, out var userIds))
 			{
 				_logger.LogWarning($"metadata key {MetadataKeys.RepliedUsers} not found");
@@ -48,15 +46,27 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 			}
 
 			var botId = GetBotId(metadata);
+
+			if (!_videoService.FrequencyCheck(botId))
+			{
+				return ActionResult.Continue;
+			}
+
+			var message = update.Message;
 			var repliedUsersIds = (HashSet<long>)userIds;
-			var replyMessage = await _chatsService.GetRandomMessageAsync(botId);
+			var randomVideo = _videoService.GetRandomVideo(botId);
+
+			if (randomVideo == null)
+			{
+				return ActionResult.NotExecuted;
+			}
+
 			var botInstance = _botInstanceRepository.GetInstance(botId);
 
-			await botInstance.Client.SendMessageAsync(
+			await botInstance.Client.SendVideoAsync(
 				message.Chat,
-				replyMessage.Text,
-				replyToMessageId: message.MessageId,
-				parseMode: ParseMode.Markdown);
+				randomVideo,
+				message.MessageId);
 
 			repliedUsersIds.Add(message.From.Id);
 

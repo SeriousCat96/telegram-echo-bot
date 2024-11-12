@@ -1,7 +1,9 @@
 ﻿using EchoBot.Telegram.Engine;
 using EchoBot.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace EchoBot.WebApp.Controllers
@@ -46,6 +48,21 @@ namespace EchoBot.WebApp.Controllers
 				parseMode: ParseMode.Markdown);
 
 			return Json(result);
+		}
+
+		[HttpPost, Route("webhook/{botId}")]
+		public async Task<IActionResult>WebhookAsync(int botId, [FromBody] Update update)
+		{
+			var botInstance = _botInstanceRepository.GetInstance(botId);
+			if (botInstance == null)
+			{
+				return NotFound();
+			}
+
+
+			await botInstance.ProcessUpdates(new[] { update });
+
+			return Ok();
 		}
 	}
 }

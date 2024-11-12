@@ -1,6 +1,5 @@
 ﻿using EchoBot.Core.Business.ChatsService;
 using EchoBot.Core.Business.TelegramBot.Actions.Filters;
-using EchoBot.Telegram;
 using EchoBot.Telegram.Actions;
 using EchoBot.Telegram.Actions.Filters;
 using EchoBot.Telegram.Engine;

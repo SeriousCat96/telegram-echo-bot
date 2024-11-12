@@ -4,6 +4,7 @@
 	{
 		NotExecuted,
 		Succeed,
+		Continue,
 		Failed
 	}
 }

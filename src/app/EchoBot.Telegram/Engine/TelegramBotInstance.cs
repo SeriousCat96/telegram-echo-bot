@@ -47,8 +47,8 @@ namespace EchoBot.Telegram.Engine
 
 		public void Dispose()
 		{
-			_timer.Dispose();
-			_semaphore.Dispose();
+			_timer?.Dispose();
+			_semaphore?.Dispose();
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken = default)
@@ -69,7 +69,24 @@ namespace EchoBot.Telegram.Engine
 				await _semaphore.WaitAsync();
 
 				var updates = await Client.GetUpdatesAsync(_offset);
-				if (updates.Length == 0)
+
+				await ProcessUpdates(updates);
+			}
+			catch (Exception exc)
+			{
+				_logger.LogError(exc, exc.Message);
+			}
+			finally
+			{
+				_semaphore.Release();
+			}
+		}
+
+		public async Task ProcessUpdates(IReadOnlyCollection<Update> updates)
+		{
+			try
+			{
+				if (updates.Count == 0)
 				{
 					return;
 				}
@@ -103,10 +120,6 @@ namespace EchoBot.Telegram.Engine
 			catch (Exception exc)
 			{
 				_logger.LogError(exc, exc.Message);
-			}
-			finally
-			{
-				_semaphore.Release();
 			}
 		}
 	}

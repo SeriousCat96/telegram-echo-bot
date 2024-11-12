@@ -10,6 +10,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Types.InputFiles;
 
 namespace EchoBot.Telegram
 {
@@ -85,6 +86,19 @@ namespace EchoBot.Telegram
 			return message;
 		}
 
+		public Task<Message> SendVideoAsync(
+			ChatId chatId,
+			InputOnlineFile video,
+			int? replyToMessageId = null,
+			CancellationToken cancellationToken = default)
+		{
+			return _bot.SendVideoAsync(
+				chatId,
+				video,
+				replyToMessageId: replyToMessageId,
+				cancellationToken: cancellationToken);
+		}
+
 		public Task<ChatMember> GetChatMemberAsync(
 			ChatId chatId,
 			long userId,
@@ -120,6 +134,23 @@ namespace EchoBot.Telegram
 					.GetAwaiter()
 					.GetResult();
 			}
+		}
+
+		public Task SetWebhook(
+			string url,
+			InputFileStream certificate = default,
+			string ipAddress = default,
+			int? maxConnections = default,
+			IEnumerable<UpdateType> allowedUpdates = default,
+			bool? dropPendingUpdates = default,
+			CancellationToken cancellationToken = default)
+		{
+			return _bot.SetWebhookAsync(url, certificate, ipAddress, maxConnections, allowedUpdates, dropPendingUpdates, cancellationToken);
+		}
+
+		public Task DeleteWebhook(bool? dropPendingUpdates = default, CancellationToken cancellationToken = default)
+		{
+			return _bot.DeleteWebhookAsync(dropPendingUpdates, cancellationToken);
 		}
 	}
 }
