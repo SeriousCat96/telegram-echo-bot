@@ -23,21 +23,9 @@ namespace EchoBot.Core.Business.ChatsService
 				.ToDictionary(k => k, v => (uint)0);
 		}
 
-		public InputOnlineFile GetRandomVideo(int botId)
+		public InputOnlineFile GetRandomVideo(string path)
 		{
-			var botOptions = _options.Bots.Where(bot => bot.Id == botId).FirstOrDefault();
-			var videoOptions = botOptions?.ChatOptions?.Videos;
-
-			var folder = videoOptions?.Folder;
-
-			if (string.IsNullOrWhiteSpace(folder))
-			{
-				return null;
-			}
-
-			var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folder);
-
-			if (!Directory.Exists(path))
+			if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
 			{
 				return null;
 			}
@@ -65,6 +53,28 @@ namespace EchoBot.Core.Business.ChatsService
 			var videoOptions = botOptions.ChatOptions.Videos;
 
 			return videoOptions != null && _counters[botId]++ % videoOptions.Frequency == 0;
+		}
+
+		public string GetFolder(int botId)
+		{
+			var botOptions = _options.Bots.Where(bot => bot.Id == botId).FirstOrDefault();
+			var videoOptions = botOptions?.ChatOptions?.Videos;
+
+			var folder = videoOptions?.Folder;
+
+			if (string.IsNullOrWhiteSpace(folder))
+			{
+				return null;
+			}
+
+			var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folder);
+
+			if (!Directory.Exists(path))
+			{
+				return null;
+			}
+
+			return path;
 		}
 	}
 }

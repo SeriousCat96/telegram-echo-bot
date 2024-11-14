@@ -51,9 +51,10 @@ namespace EchoBot.Core.BackgroundJobs.SendMessage
 
 			var botInstance = _botInstanceRepository.GetInstance(botId);
 
-			if (_videoService.FrequencyCheck(botId))
+			var videoFolder = _videoService.GetFolder(botId);
+			if (string.IsNullOrWhiteSpace(videoFolder) || !_videoService.FrequencyCheck(botId))
 			{
-				var randomVideo = _videoService.GetRandomVideo(botId);
+				var randomVideo = _videoService.GetRandomVideo(videoFolder);
 
 				if (randomVideo != null)
 				{

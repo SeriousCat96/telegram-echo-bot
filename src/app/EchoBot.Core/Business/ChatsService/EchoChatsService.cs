@@ -61,7 +61,8 @@ namespace EchoBot.Core.Business.ChatsService
 			var botOptions = _options.Bots.Where(bot => bot.Id == botId).FirstOrDefault();
 			var chatOptions = botOptions.ChatOptions;
 
-			return _counters[botId]++ % chatOptions.ReplyFrequency == 0;
+			var result = _counters[botId]++ % chatOptions.ReplyFrequency == 0;
+			return result;
 		}
 	}
 }

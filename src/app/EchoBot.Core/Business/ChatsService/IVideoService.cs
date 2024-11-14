@@ -4,8 +4,10 @@ namespace EchoBot.Core.Business.ChatsService
 {
 	public interface IVideoService
 	{
-		InputOnlineFile GetRandomVideo(int botId);
+		InputOnlineFile GetRandomVideo(string path);
 
 		bool FrequencyCheck(int botId);
+
+		string GetFolder(int botId);
 	}
 }

@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace EchoBot.Core.Business.TelegramBot.Actions
 {
@@ -47,14 +46,15 @@ namespace EchoBot.Core.Business.TelegramBot.Actions
 
 			var botId = GetBotId(metadata);
 
-			if (!_videoService.FrequencyCheck(botId))
+			var videoFolder = _videoService.GetFolder(botId);
+			if (string.IsNullOrWhiteSpace(videoFolder) || !_videoService.FrequencyCheck(botId))
 			{
 				return ActionResult.Continue;
 			}
 
 			var message = update.Message;
 			var repliedUsersIds = (HashSet<long>)userIds;
-			var randomVideo = _videoService.GetRandomVideo(botId);
+			var randomVideo = _videoService.GetRandomVideo(videoFolder);
 
 			if (randomVideo == null)
 			{
